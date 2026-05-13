@@ -1,389 +1,211 @@
 <template>
-  <div>
-    <!-- 游戏主界面 -->
-    <div v-if="!showCharacterCreator && hasActiveSession" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- 左侧属性面板 -->
-      <div class="lg:col-span-1">
-        <StatsPanel
-          :stats="currentStats"
-          :profile="avatarProfile"
-          :flags="currentFlags"
-          :age="currentAge"
-          :round="currentRound"
-          :delta-stats="lastDeltaStats || undefined"
-        />
-      </div>
-
-      <!-- 中间事件卡片 -->
-      <div class="lg:col-span-2">
-        <EventCard
-          v-if="currentEventCard"
-          :event="currentEventCard"
-          :result-text="lastResultText"
-          :generated-image="lastGeneratedImage || undefined"
-          :is-generating-image="isGeneratingImage"
-          :is-processing="isProcessing"
-          :selected-choice="pendingChoice || undefined"
-          :image-info="lastAIOutput?.seedream || undefined"
-          @choose="handleChoice"
-        />
-        
-        <!-- 等待下一个事件 -->
-        <div v-else class="game-card text-center">
-          <div v-if="isLoadingEvent" class="py-8">
-            <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <div class="text-gray-600">生成下一个事件中...</div>
-          </div>
-          <div v-else class="py-8">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">准备下一个人生阶段</h3>
-            <button
-              @click="generateNextEvent"
-              class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              继续游戏
-            </button>
-          </div>
+  <div class="max-w-4xl mx-auto space-y-6">
+    <div class="game-card">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <h2 class="text-2xl font-bold text-gray-800">你 vs 神秘网友</h2>
+        <div class="flex gap-4 text-sm">
+          <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded">第 {{ round }}/5 轮</span>
+          <span class="px-3 py-1 bg-green-50 text-green-700 rounded">积分 {{ score }}</span>
         </div>
       </div>
+      <p v-if="currentTheme" class="mt-2 text-sm text-gray-500">本轮情节：{{ currentTheme.name }}</p>
+      <p v-if="lastJudge" class="mt-3 text-sm text-gray-600">{{ lastJudge }}</p>
     </div>
 
-    <!-- 角色创建界面 -->
-    <div v-else-if="showCharacterCreator">
-      <CharacterCreator
-        @confirm="createCharacter"
-        @cancel="cancelCharacterCreation"
-      />
-    </div>
-
-    <!-- 无活跃会话时的界面 -->
-    <div v-else class="text-center">
-      <div class="game-card max-w-md mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">开始新的人生</h2>
-        <p class="text-gray-600 mb-6">创建您的虚拟角色，开始人生重开之旅</p>
-        
-        <div v-if="!isAPIConfigured" class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <div class="text-amber-800 text-sm">
-            <svg class="w-5 h-5 mr-2 inline" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-            请先在设置页面配置 API 密钥
-          </div>
-        </div>
-        
-        <div class="space-y-3">
-          <button
-            @click="startNewGame"
-            :disabled="!isAPIConfigured"
-            class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            创建角色
-          </button>
-          
-          <router-link
-            to="/settings"
-            class="block w-full px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            API 设置
-          </router-link>
-        </div>
-      </div>
-    </div>
-
-    <!-- 游戏历史面板 -->
-    <div v-if="hasActiveSession && gameHistory.length > 0" class="mt-8">
-      <div class="game-card">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-800">游戏历史</h3>
-          <button
-            @click="showHistory = !showHistory"
-            class="text-sm text-blue-600 hover:text-blue-800"
-          >
-            {{ showHistory ? '隐藏' : '显示' }}历史
-          </button>
-        </div>
-        
-        <div v-show="showHistory" class="space-y-4 max-h-96 overflow-y-auto">
+    <div class="game-card">
+      <div class="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+        <div
+          v-for="(item, idx) in chatHistory"
+          :key="idx"
+          class="flex"
+          :class="item.role === 'user' ? 'justify-end' : 'justify-start'"
+        >
           <div
-            v-for="round in gameHistory.slice().reverse()"
-            :key="round.round"
-            class="p-4 bg-gray-50 rounded-lg border"
+            class="max-w-[82%] rounded-xl px-3 py-2 text-sm"
+            :class="item.role === 'user' ? 'bg-blue-600 text-white' : 'bg-red-50 border border-red-200 text-red-900'"
           >
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-medium text-gray-800">
-                第 {{ round.round }} 回合 ({{ round.age }}岁)
-              </span>
-              <span class="text-xs text-gray-500">{{ formatTime(round.timestamp) }}</span>
-            </div>
-            <div class="text-sm text-gray-600 mb-2">
-              <strong>事件:</strong> {{ round.event_card.title }}
-            </div>
-            <div class="text-sm text-gray-600 mb-2">
-              <strong>选择:</strong> {{ round.choice_made.text }}
-            </div>
-            <div class="text-sm text-gray-700">
-              <strong>结果:</strong> {{ round.ai_output.result_text }}
-            </div>
-            <div v-if="round.generated_image" class="mt-2">
-              <img 
-                :src="round.generated_image" 
-                :alt="round.event_card.title"
-                class="w-24 h-24 object-cover rounded border cursor-pointer"
-                @click="showImageModal(round.generated_image)"
-              />
-            </div>
+            {{ item.text }}
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 图像模态框 -->
-    <div
-      v-if="modalImage"
-      class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
-      @click="modalImage = null"
-    >
-      <div class="max-w-4xl max-h-4xl p-4">
-        <img
-          :src="modalImage"
-          alt="历史图像"
-          class="max-w-full max-h-full object-contain rounded"
-        />
+    <div v-if="stage === 'playing'" class="space-y-6">
+      <div v-if="loading" class="game-card text-center text-gray-600">神秘网友正在输入...</div>
+
+      <div v-else class="game-card">
+        <h4 class="font-semibold text-gray-800 mb-3">选择回复话术</h4>
+        <div class="space-y-2">
+          <button
+            v-for="item in currentOptions"
+            :key="item.id"
+            class="choice-button"
+            :disabled="replying"
+            @click="pickOption(item.id)"
+          >
+            <span class="font-medium mr-2">{{ item.id }}.</span>{{ item.text }}
+          </button>
+        </div>
       </div>
+
+      <div class="game-card">
+        <h4 class="font-semibold text-gray-800 mb-3">自定义回复</h4>
+        <div class="flex gap-2">
+          <input
+            v-model="freeInput"
+            type="text"
+            placeholder="输入你自己的回复话术..."
+            class="flex-1 border border-gray-300 rounded px-3 py-2"
+            :disabled="replying"
+          />
+          <button
+            @click="sendCustomReply"
+            :disabled="replying || !freeInput.trim()"
+            class="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
+          >
+            {{ replying ? '发送中...' : '发送' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="game-card border-blue-200 bg-blue-50">
+      <h3 class="text-lg font-semibold text-blue-900 mb-2">结算：骗子{{ finalReport?.result }}</h3>
+      <p class="text-blue-900 mb-4">{{ finalReport?.scammerSummary }}</p>
+      <h4 class="text-sm font-semibold text-blue-900 mb-2">反诈科普</h4>
+      <ul class="list-disc pl-5 text-sm text-blue-900 space-y-1">
+        <li v-for="(tip, idx) in finalReport?.tips || []" :key="idx">{{ tip }}</li>
+      </ul>
+      <button @click="restartGame" class="mt-4 px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">再来一局</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useGameStore } from '@/stores/game'
-import { useSettingsStore } from '@/stores/settings'
-import { useEventsStore } from '@/stores/events'
-import { useLifeEventsStore } from '@/stores/lifeEvents'
-import { GameEngine } from '@/services/gameEngine'
-import StatsPanel from '@/components/StatsPanel.vue'
-import EventCard from '@/components/EventCard.vue'
-import CharacterCreator from '@/components/CharacterCreator.vue'
-import type { AvatarProfile, GameStats, Choice, SeedreamConfig, GameEngineOutput } from '@/types/game'
+import { onMounted, ref } from 'vue'
+import {
+  evaluateCustomReply,
+  generateFinalReport,
+  generateRoundPack,
+  SCENARIO_THEMES,
+  type ScenarioTheme,
+  type FinalReport,
+  type ScenarioOption
+} from '@/services/antiFraudGame'
 
-const gameStore = useGameStore()
-const settingsStore = useSettingsStore()
-const eventsStore = useEventsStore()
-const lifeEventsStore = useLifeEventsStore()
+type ChatMessage = { role: 'user' | 'scammer'; text: string }
 
-const showCharacterCreator = ref(false)
-const isLoadingEvent = ref(false)
-const isGeneratingImage = ref(false)
-const showHistory = ref(false)
-const modalImage = ref<string | null>(null)
-const lastResultText = ref('')
-const lastDeltaStats = ref<GameStats | null>(null)
-const lastAIOutput = ref<GameEngineOutput | null>(null)
+const round = ref(1)
+const score = ref(0)
+const stage = ref<'playing' | 'final'>('playing')
+const loading = ref(false)
+const replying = ref(false)
 
-// 计算属性
-const hasActiveSession = computed(() => gameStore.hasActiveSession)
-const isAPIConfigured = computed(() => settingsStore.isAPIConfigured)
-const currentStats = computed(() => gameStore.currentStats)
-const currentFlags = computed(() => gameStore.currentFlags)
-const currentAge = computed(() => gameStore.currentAge)
-const currentRound = computed(() => gameStore.currentRound)
-const avatarProfile = computed(() => gameStore.avatarProfile)
-const currentEventCard = computed(() => gameStore.currentEventCard)
-const isProcessing = computed(() => gameStore.isProcessing)
-const pendingChoice = computed(() => gameStore.pendingChoice)
-const lastGeneratedImage = computed(() => gameStore.lastGeneratedImage)
-const gameHistory = computed(() => gameStore.gameHistory)
+const freeInput = ref('')
+const chatHistory = ref<ChatMessage[]>([])
+const currentOptions = ref<ScenarioOption[]>([])
+const currentCorrectOptionId = ref('')
+const finalReport = ref<FinalReport | null>(null)
+const lastJudge = ref('')
+const currentTheme = ref<ScenarioTheme | null>(null)
 
-onMounted(() => {
-  settingsStore.loadSettings()
-  gameStore.loadSession()
-  eventsStore.initializeEventLibrary()
-  
-  // 如果有活跃会话但没有当前事件，生成下一个事件
-  if (hasActiveSession.value && !currentEventCard.value) {
-    generateNextEvent()
+function lastScammerMessage() {
+  const scammerMsgs = chatHistory.value.filter((x) => x.role === 'scammer')
+  return scammerMsgs[scammerMsgs.length - 1]?.text || ''
+}
+
+async function loadRoundPack() {
+  loading.value = true
+  try {
+    if (!currentTheme.value) {
+      currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+    }
+    const pack = await generateRoundPack(chatHistory.value, round.value, currentTheme.value)
+    pack.scammerMessages.forEach((msg) => {
+      chatHistory.value.push({ role: 'scammer', text: msg })
+    })
+    currentOptions.value = pack.options
+    currentCorrectOptionId.value = pack.correctOptionId
+  } finally {
+    loading.value = false
   }
-})
+}
 
-const startNewGame = () => {
-  if (!isAPIConfigured.value) {
-    alert('请先配置 API 设置')
+async function endOrNextRound() {
+  if (round.value >= 5) {
+    const report = await generateFinalReport(chatHistory.value, score.value)
+    finalReport.value = report
+    chatHistory.value.push({ role: 'scammer', text: report.scammerSummary })
+    stage.value = 'final'
     return
   }
-  showCharacterCreator.value = true
+
+  round.value += 1
+  await loadRoundPack()
 }
 
-const createCharacter = (profile: AvatarProfile, stats: GameStats) => {
-  gameStore.createNewSession(profile, stats)
-  showCharacterCreator.value = false
-  generateNextEvent()
-}
+async function pickOption(optionId: string) {
+  if (replying.value || loading.value || stage.value !== 'playing') return
+  const selected = currentOptions.value.find((x) => x.id === optionId)
+  if (!selected) return
 
-const cancelCharacterCreation = () => {
-  showCharacterCreator.value = false
-}
-
-const generateNextEvent = async () => {
-  isLoadingEvent.value = true
-  
+  replying.value = true
   try {
-    // 根据当前状态筛选事件
-    let nextLabels: string[]
-    
-    if (currentRound.value === 0) {
-      // 游戏开始时使用开始标签
-      nextLabels = ['开始', '选择']
-    } else if (lastAIOutput.value?.next_labels && lastAIOutput.value.next_labels.length > 0) {
-      // 使用AI推荐的标签
-      nextLabels = lastAIOutput.value.next_labels
+    chatHistory.value.push({ role: 'user', text: selected.text })
+    if (selected.category === 'funny') {
+      lastJudge.value = '本轮判定：戏耍中立，积分不变'
+    } else if (optionId === currentCorrectOptionId.value) {
+      score.value += 10
+      lastJudge.value = '本轮判定：成功反诈，+10分'
     } else {
-      // 根据当前属性和年龄动态生成标签
-      nextLabels = generateDynamicLabels()
+      score.value -= 5
+      lastJudge.value = '本轮判定：存在风险，-5分'
     }
-    
-    console.log('筛选事件标签:', nextLabels, '当前回合:', currentRound.value)
-    eventsStore.filterEvents(nextLabels, currentAge.value, currentFlags.value)
-    
-    // 智能获取事件（结合静态和 AI 生成）
-    let event = await eventsStore.getSmartEvent(gameStore.currentSession || undefined)
-    
-    // 如果上面已经尝试过 AI 生成但失败，则直接使用通用事件
-    if (!event) {
-      console.warn('没有找到匹配的事件，使用后备事件')
-      event = eventsStore.getFallbackEvent(gameStore.currentSession || undefined)
-    }
-    
-    // 设置当前事件卡片（这一步很关键！）
-    if (event) {
-      console.log('✅ 选中事件:', event.title, 'ID:', event.id)
-      gameStore.setCurrentEventCard(event)
-    } else {
-      console.error('❌ 没有可用的事件，这不应该发生')
-    }
-  } catch (error) {
-    console.error('生成事件失败:', error)
-    alert('生成事件失败，请检查网络连接或 API 配置')
+    await endOrNextRound()
   } finally {
-    isLoadingEvent.value = false
+    replying.value = false
   }
 }
 
-// 根据当前状态动态生成标签
-const generateDynamicLabels = (): string[] => {
-  const labels: string[] = []
-  const stats = currentStats.value
-  const age = currentAge.value
-  const flags = currentFlags.value
-  
-  // 基于年龄的标签
-  if (age < 20) {
-    labels.push('校园', '青春', '学习')
-  } else if (age < 30) {
-    labels.push('工作', '恋爱', '成长')
-  } else if (age < 50) {
-    labels.push('事业', '家庭', '责任')
-  } else {
-    labels.push('智慧', '回顾', '传承')
-  }
-  
-  // 基于属性的标签
-  if (stats.智力 > 8) {
-    labels.push('学术', '知识', '智慧')
-  }
-  if (stats.体质 > 8) {
-    labels.push('运动', '健康', '活力')
-  }
-  if (stats.魅力 > 8) {
-    labels.push('社交', '人际', '魅力')
-  }
-  if (stats.运气 > 8) {
-    labels.push('机遇', '惊喜', '好运')
-  }
-  if (stats.金钱 > 500) {
-    labels.push('投资', '消费', '财富')
-  }
-  
-  // 基于状态标签的推荐
-  if (flags.includes('学霸')) {
-    labels.push('学术', '研究', '教育')
-  }
-  if (flags.includes('运动员')) {
-    labels.push('体育', '竞技', '健身')
-  }
-  
-  // 确保至少有一些基础标签
-  labels.push('日常', '挑战', '成长')
-  
-  // 去重并返回前6个标签
-  return [...new Set(labels)].slice(0, 6)
-}
+async function sendCustomReply() {
+  if (replying.value || loading.value || stage.value !== 'playing' || !freeInput.value.trim()) return
+  replying.value = true
+  const text = freeInput.value.trim()
 
-const handleChoice = async (choice: Choice) => {
-  if (!currentEventCard.value || isProcessing.value) return
-  
-  gameStore.setPendingChoice(choice)
-  gameStore.setProcessing(true)
-  
   try {
-    console.log('开始处理玩家选择:', choice.text)
-    console.log('图像生成设置:', settingsStore.preferences.enableImageGeneration)
-    
-    // 创建游戏引擎实例
-    const gameEngine = new GameEngine(
-      settingsStore.apiConfig.openai_api_key,
-      settingsStore.apiConfig.seedream_api_key,
-      settingsStore.apiConfig.openai_base_url,
-      settingsStore.apiConfig.seedream_base_url,
-      !settingsStore.preferences.enableImageGeneration // 根据设置决定是否使用模拟图像
-    )
-    
-    console.log('API 配置:', {
-      openai_configured: !!settingsStore.apiConfig.openai_api_key,
-      seedream_configured: !!settingsStore.apiConfig.seedream_api_key,
-      use_mock_image: !settingsStore.preferences.enableImageGeneration
-    })
-    
-    // 处理玩家选择
-    const gameRound = await gameEngine.processPlayerChoice(
-      gameStore.currentSession!,
-      currentEventCard.value,
-      choice
-    )
-    
-    // 更新游戏状态
-    lastResultText.value = gameRound.ai_output.result_text
-    lastDeltaStats.value = gameRound.ai_output.delta_stats
-    lastAIOutput.value = gameRound.ai_output
-    
-    // 处理图像生成
-    if (gameRound.generated_image) {
-      console.log('图像生成成功:', gameRound.generated_image.substring(0, 50) + '...')
-      gameStore.setGeneratedImage(gameRound.generated_image)
+    chatHistory.value.push({ role: 'user', text })
+    const result = await evaluateCustomReply(lastScammerMessage(), text)
+    if (result.verdict === 'safe') {
+      score.value += 10
+      lastJudge.value = '本轮判定：成功反诈，+10分'
+    } else if (result.verdict === 'risky') {
+      score.value -= 5
+      lastJudge.value = '本轮判定：存在风险，-5分'
     } else {
-      console.warn('未生成图像，可能是 API 调用失败或图像生成被禁用')
+      lastJudge.value = '本轮判定：戏耍中立，积分不变'
     }
-    
-    gameStore.processRoundResult(gameRound)
-    
-    // 等待一段时间显示结果，然后生成下一个事件
-    setTimeout(() => {
-      generateNextEvent()
-      lastResultText.value = ''
-      lastDeltaStats.value = null
-    }, 3000)
-    
-  } catch (error) {
-    console.error('处理选择失败:', error)
-    alert(`处理选择失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    freeInput.value = ''
+    await endOrNextRound()
   } finally {
-    gameStore.setProcessing(false)
+    replying.value = false
   }
 }
 
-const formatTime = (timestamp: string) => {
-  return new Date(timestamp).toLocaleString('zh-CN')
+async function restartGame() {
+  round.value = 1
+  score.value = 0
+  stage.value = 'playing'
+  freeInput.value = ''
+  chatHistory.value = []
+  currentOptions.value = []
+  currentCorrectOptionId.value = ''
+  finalReport.value = null
+  lastJudge.value = ''
+  currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+  await loadRoundPack()
 }
 
-const showImageModal = (imageUrl: string) => {
-  modalImage.value = imageUrl
-}
+onMounted(() => {
+  restartGame()
+})
 </script>

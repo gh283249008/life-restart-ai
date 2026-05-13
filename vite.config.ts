@@ -11,43 +11,27 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+    open: false,
     cors: true,
+    allowedHosts: ['.monkeycode-ai.online'],
     proxy: {
-      '/doubao': {
-        target: 'https://ark.cn-beijing.volces.com/api/v3',
+      '/deepseek': {
+        target: 'https://api.deepseek.com',
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/doubao/, ''),
+        rewrite: (path) => path.replace(/^\/deepseek/, ''),
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            console.log('doubao proxy error', err);
+            console.log('deepseek proxy error', err);
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to Doubao:', req.method, req.url);
+            console.log('Sending Request to DeepSeek:', req.method, req.url);
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from Doubao:', proxyRes.statusCode, req.url);
+            console.log('Received Response from DeepSeek:', proxyRes.statusCode, req.url);
           });
         },
       },
-      '/seedream': {
-        target: 'https://ark.cn-beijing.volces.com/api/v3',
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/seedream/, ''),
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('seedream proxy error', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to Seedream:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from Seedream:', proxyRes.statusCode, req.url);
-          });
-        },
-      }
     }
   }
 })

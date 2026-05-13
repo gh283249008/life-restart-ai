@@ -3,8 +3,7 @@
     <nav class="bg-white shadow-sm border-b">
       <div class="max-w-6xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
-          <!-- 左侧标题 -->
-          <h1 class="text-xl font-bold text-gray-800">AI 人生重开</h1>
+          <h1 class="text-xl font-bold text-gray-800">好薯坏薯・票务反诈局</h1>
           
           <!-- 右侧菜单 -->
           <div class="hidden md:flex space-x-6">
@@ -20,14 +19,7 @@
               class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
               :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Game' }"
             >
-              开始游戏
-            </router-link>
-            <router-link
-              to="/settings"
-              class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
-              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Settings' }"
-            >
-              设置
+              进入对局
             </router-link>
           </div>
         </div>
