@@ -9,6 +9,8 @@
         </div>
       </div>
       <p v-if="currentTheme" class="mt-2 text-sm text-gray-500">本轮情节：{{ currentTheme.name }}</p>
+      <p v-if="roundSource" class="mt-1 text-xs text-gray-500">本轮来源：{{ roundSource }}</p>
+      <p v-if="sessionRagUsed" class="mt-1 text-xs text-amber-700">本局标记：已触发检索兜底</p>
       <p v-if="lastJudge" class="mt-3 text-sm text-gray-600">{{ lastJudge }}</p>
     </div>
 
@@ -31,7 +33,14 @@
     </div>
 
     <div v-if="stage === 'playing'" class="space-y-6">
-      <div v-if="loading" class="game-card text-center text-gray-600">神秘网友正在输入...</div>
+      <div v-if="loading || delivering" class="game-card text-center text-gray-600">神秘网友正在输入...</div>
+      <div v-else-if="loadError" class="game-card text-center text-red-700">
+        {{ loadError }}
+        <pre v-if="rawAiError" class="mt-3 p-3 text-left text-xs bg-red-50 border border-red-200 rounded whitespace-pre-wrap break-words">{{ rawAiError }}</pre>
+        <div class="mt-3">
+          <button @click="loadRoundPack" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">重试本轮</button>
+        </div>
+      </div>
 
       <div v-else class="game-card">
         <h4 class="font-semibold text-gray-800 mb-3">选择回复话术</h4>
@@ -40,7 +49,7 @@
             v-for="item in currentOptions"
             :key="item.id"
             class="choice-button"
-            :disabled="replying"
+            :disabled="replying || loading || delivering"
             @click="pickOption(item.id)"
           >
             <span class="font-medium mr-2">{{ item.id }}.</span>{{ item.text }}
@@ -56,11 +65,11 @@
             type="text"
             placeholder="输入你自己的回复话术..."
             class="flex-1 border border-gray-300 rounded px-3 py-2"
-            :disabled="replying"
+            :disabled="replying || loading || delivering"
           />
           <button
             @click="sendCustomReply"
-            :disabled="replying || !freeInput.trim()"
+            :disabled="replying || loading || delivering || !freeInput.trim()"
             class="px-4 py-2 bg-gray-800 text-white rounded disabled:opacity-50"
           >
             {{ replying ? '发送中...' : '发送' }}
@@ -87,11 +96,13 @@ import {
   evaluateCustomReply,
   generateFinalReport,
   generateRoundPack,
+  RoundGenerationError,
   SCENARIO_THEMES,
   type ScenarioTheme,
   type FinalReport,
   type ScenarioOption
 } from '@/services/antiFraudGame'
+import { resetRetrieveSession } from '@/services/ragStore'
 
 type ChatMessage = { role: 'user' | 'scammer'; text: string }
 
@@ -99,7 +110,9 @@ const round = ref(1)
 const score = ref(0)
 const stage = ref<'playing' | 'final'>('playing')
 const loading = ref(false)
+const delivering = ref(false)
 const replying = ref(false)
+const deliveryToken = ref(0)
 
 const freeInput = ref('')
 const chatHistory = ref<ChatMessage[]>([])
@@ -108,10 +121,38 @@ const currentCorrectOptionId = ref('')
 const finalReport = ref<FinalReport | null>(null)
 const lastJudge = ref('')
 const currentTheme = ref<ScenarioTheme | null>(null)
+const roundSource = ref<'AI生成' | '检索兜底' | '前端兜底' | ''>('')
+const sessionRagUsed = ref(false)
+const loadError = ref('')
+const rawAiError = ref('')
 
 function lastScammerMessage() {
   const scammerMsgs = chatHistory.value.filter((x) => x.role === 'scammer')
   return scammerMsgs[scammerMsgs.length - 1]?.text || ''
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function deliverScammerMessages(messages: string[], token: number) {
+  delivering.value = true
+  try {
+    let lastText = ''
+    for (const message of messages) {
+      if (token !== deliveryToken.value) return
+      await sleep(320 + Math.floor(Math.random() * 460))
+      if (token !== deliveryToken.value) return
+      const text = String(message).trim()
+      if (!text || text === lastText) continue
+      chatHistory.value.push({ role: 'scammer', text })
+      lastText = text
+    }
+  } finally {
+    if (token === deliveryToken.value) {
+      delivering.value = false
+    }
+  }
 }
 
 async function loadRoundPack() {
@@ -121,11 +162,25 @@ async function loadRoundPack() {
       currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
     }
     const pack = await generateRoundPack(chatHistory.value, round.value, currentTheme.value)
-    pack.scammerMessages.forEach((msg) => {
-      chatHistory.value.push({ role: 'scammer', text: msg })
-    })
+    roundSource.value = pack.source === 'ai' ? 'AI生成' : '检索兜底'
+    if (pack.source === 'rag') sessionRagUsed.value = true
+    loadError.value = ''
+    rawAiError.value = pack.source === 'rag' ? (pack.rawContent || '[无原始正文]') : ''
+    const token = deliveryToken.value
+    await deliverScammerMessages(pack.scammerMessages, token)
     currentOptions.value = pack.options
     currentCorrectOptionId.value = pack.correctOptionId
+  } catch (error) {
+    roundSource.value = '前端兜底'
+    loadError.value = '本轮生成失败，请点击重试本轮。'
+    if (error instanceof RoundGenerationError && error.rawContent) {
+      loadError.value = `本轮生成失败（stage=${error.stage}, reason=${error.reason || 'unknown'}${error.status ? `, status=${error.status}` : ''}）`
+      rawAiError.value = error.rawContent
+    } else if (error instanceof Error) {
+      rawAiError.value = error.message
+    } else {
+      rawAiError.value = ''
+    }
   } finally {
     loading.value = false
   }
@@ -133,7 +188,7 @@ async function loadRoundPack() {
 
 async function endOrNextRound() {
   if (round.value >= 5) {
-    const report = await generateFinalReport(chatHistory.value, score.value)
+    const report = await generateFinalReport(chatHistory.value)
     finalReport.value = report
     chatHistory.value.push({ role: 'scammer', text: report.scammerSummary })
     stage.value = 'final'
@@ -192,15 +247,22 @@ async function sendCustomReply() {
 }
 
 async function restartGame() {
+  deliveryToken.value += 1
+  resetRetrieveSession()
   round.value = 1
   score.value = 0
   stage.value = 'playing'
+  delivering.value = false
   freeInput.value = ''
   chatHistory.value = []
   currentOptions.value = []
   currentCorrectOptionId.value = ''
   finalReport.value = null
   lastJudge.value = ''
+  roundSource.value = ''
+  sessionRagUsed.value = false
+  loadError.value = ''
+  rawAiError.value = ''
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
   await loadRoundPack()
 }

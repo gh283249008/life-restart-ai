@@ -1,4 +1,5 @@
 import { LLM_CONFIG } from '@/config/llm'
+import { rememberRoundPack, retrieveRoundPack } from './ragStore'
 
 export interface ScenarioOption {
   id: string
@@ -10,6 +11,33 @@ export interface RoundPack {
   scammerMessages: string[]
   options: ScenarioOption[]
   correctOptionId: string
+}
+
+export interface RoundPackResult extends RoundPack {
+  source: 'ai' | 'rag'
+  rawContent?: string
+}
+
+export class RoundGenerationError extends Error {
+  rawContent?: string
+  stage: 'request' | 'parse_or_validate'
+  reason?: 'timeout' | 'network' | 'http' | 'circuit_open' | 'empty_content' | 'unknown'
+  status?: number
+
+  constructor(
+    message: string,
+    stage: 'request' | 'parse_or_validate',
+    rawContent?: string,
+    reason?: 'timeout' | 'network' | 'http' | 'circuit_open' | 'empty_content' | 'unknown',
+    status?: number
+  ) {
+    super(message)
+    this.name = 'RoundGenerationError'
+    this.stage = stage
+    this.rawContent = rawContent
+    this.reason = reason
+    this.status = status
+  }
 }
 
 export interface FinalReport {
@@ -33,6 +61,98 @@ export const SCENARIO_THEMES: ScenarioTheme[] = [
   { id: 'overseas_show', name: '海外场次代购', brief: '跨境票务代购，骗子以海关和税费名义二次收费。' }
 ]
 
+const unsafeKeywordList = ['色情', '裸聊', '约炮', '毒品', '爆炸物', '种族清洗']
+
+function sanitizeUnsafeText(text: string): string {
+  let safe = String(text)
+  safe = safe.replace(/\b\d{12,19}\b/g, '[银行卡号]')
+  safe = safe.replace(/\b\d{17}[\dXx]\b/g, '[身份证号]')
+  safe = safe.replace(/\b1[3-9]\d{9}\b/g, '[手机号]')
+  safe = safe.replace(/(收款人|姓名|户名)[:：]\s*[\u4e00-\u9fa5]{2,4}/g, '$1:[已脱敏]')
+  safe = safe.replace(/(验证码|code)[:：]?\s*\d{4,8}/gi, '$1[已脱敏]')
+  return safe
+}
+
+function hasUnsafeText(text: string): boolean {
+  const src = String(text)
+  if (/\b\d{12,19}\b/.test(src)) return true
+  if (/\b\d{17}[\dXx]\b/.test(src)) return true
+  if (/\b1[3-9]\d{9}\b/.test(src)) return true
+  if (/(收款人|姓名|户名)[:：]\s*[\u4e00-\u9fa5]{2,4}/.test(src)) return true
+  return unsafeKeywordList.some((k) => src.includes(k))
+}
+
+function enforceRoundPackSafety(pack: RoundPack): RoundPack {
+  const sanitizedMessages = pack.scammerMessages.map((m, idx) => {
+    const text = sanitizeUnsafeText(m)
+    return hasUnsafeText(text) ? `这边票源紧张，你先按平台流程验真再操作。(${idx + 1})` : text
+  })
+
+  const sanitizedOptions = pack.options.map((o, idx) => {
+    const text = sanitizeUnsafeText(o.text)
+    if (!hasUnsafeText(text)) return { ...o, text }
+    if (o.category === 'correct') {
+      return { ...o, text: '只走官方平台核验，不私下转账也不提供隐私信息。' }
+    }
+    if (o.category === 'funny') {
+      return { ...o, text: `你先背一遍反诈口诀，我再考虑要不要回你。(${idx + 1})` }
+    }
+    return { ...o, text: `先别急，我只接受平台内交易和验真。(${idx + 1})` }
+  })
+
+  return {
+    ...pack,
+    scammerMessages: sanitizedMessages,
+    options: sanitizedOptions
+  }
+}
+
+function normalizeRoundPack(raw: RoundPack): RoundPack {
+  const scammerMessages = (raw.scammerMessages || [])
+    .map((x) => String(x).trim())
+    .filter(Boolean)
+    .slice(0, 3)
+
+  const baseMessages = scammerMessages.length > 0 ? scammerMessages : ['我这边还有票，你先走私下流程更快。']
+
+  const rawOptions = (raw.options || []).slice(0, 4).map((o, idx) => ({
+    id: ['A', 'B', 'C', 'D'][idx] || String(o?.id || ''),
+    text: String(o?.text || '').trim() || `回复话术${idx + 1}`,
+    category: o?.category as unknown
+  }))
+
+  while (rawOptions.length < 4) {
+    const idx = rawOptions.length
+    rawOptions.push({
+      id: ['A', 'B', 'C', 'D'][idx],
+      text: `补充回复${idx + 1}`,
+      category: 'wrong' as unknown
+    })
+  }
+
+  const validCategory = (x: unknown): x is 'correct' | 'wrong' | 'funny' => x === 'correct' || x === 'wrong' || x === 'funny'
+  const assigned = rawOptions.map((o) => ({ ...o, category: validCategory(o.category) ? o.category : 'wrong' as const }))
+
+  // 强制归一：1 correct + 2 wrong + 1 funny
+  const firstCorrect = assigned.findIndex((o) => o.category === 'correct')
+  const firstFunny = assigned.findIndex((o) => o.category === 'funny')
+  if (firstCorrect === -1) assigned[0].category = 'correct'
+  if (firstFunny === -1) assigned[3].category = 'funny'
+
+  const fixed = assigned.map((o, i) => ({
+    ...o,
+    category: i === 0 ? 'correct' as const : i === 3 ? 'funny' as const : 'wrong' as const
+  }))
+
+  const correctOptionId = fixed.find((x) => x.category === 'correct')?.id || 'A'
+
+  return {
+    scammerMessages: baseMessages,
+    options: fixed,
+    correctOptionId
+  }
+}
+
 function extractJson(raw: string): string {
   const codeMatch = raw.match(/```json\s*([\s\S]*?)\s*```/)
   if (codeMatch?.[1]) return codeMatch[1].trim()
@@ -41,46 +161,167 @@ function extractJson(raw: string): string {
   return raw.trim()
 }
 
-async function callLLM(messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>, maxTokens = 420) {
-  const response = await fetch(`${LLM_CONFIG.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${LLM_CONFIG.apiKey}`
-    },
-    body: JSON.stringify({
-      model: LLM_CONFIG.model,
-      messages,
-      temperature: 0.75,
-      max_tokens: maxTokens
-    })
-  })
+function isLikelyTruncatedJson(raw: string): boolean {
+  const text = String(raw || '').trim()
+  if (!text) return false
+  const open = (text.match(/\{/g) || []).length
+  const close = (text.match(/\}/g) || []).length
+  // 常见截断特征：花括号不平衡，或不是以 } 结尾
+  if (open > close) return true
+  if (!text.endsWith('}')) return true
+  return false
+}
 
-  if (!response.ok) {
-    throw new Error(`AI 请求失败: ${response.status} ${response.statusText}`)
+const REQUEST_TIMEOUT_MS = 10000
+const MAX_RETRIES = 2
+const RETRY_DELAYS_MS = [300, 800, 1500]
+const BREAKER_FAIL_THRESHOLD = 6
+const BREAKER_COOLDOWN_MS = 8000
+
+let failureCount = 0
+let breakerUntil = 0
+const inflight = new Map<string, Promise<string>>()
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isRetryableStatus(status: number) {
+  return status === 429 || status >= 500
+}
+
+function recordSuccess() {
+  failureCount = 0
+  breakerUntil = 0
+}
+
+function recordFailure() {
+  failureCount += 1
+  if (failureCount >= BREAKER_FAIL_THRESHOLD) {
+    breakerUntil = Date.now() + BREAKER_COOLDOWN_MS
+  }
+}
+
+function isCircuitOpen() {
+  return Date.now() < breakerUntil
+}
+
+async function callLLM(
+  messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+  maxTokens = 420,
+  bypassCircuit = false,
+  extraRetries = 0
+) {
+  if (!bypassCircuit && isCircuitOpen()) {
+    const err = new Error('AI 服务冷却中') as Error & { reason?: string }
+    err.reason = 'circuit_open'
+    throw err
   }
 
-  const data = await response.json()
-  const content = data?.choices?.[0]?.message?.content
-  if (!content) {
-    throw new Error('AI 返回为空')
+  const key = JSON.stringify({ messages, maxTokens })
+  const existing = inflight.get(key)
+  if (existing) {
+    return existing
   }
-  return content as string
+
+  const requestPromise = (async () => {
+    const retryBudget = MAX_RETRIES + extraRetries
+    for (let attempt = 0; attempt <= retryBudget; attempt += 1) {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+
+      try {
+        const response = await fetch(`${LLM_CONFIG.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${LLM_CONFIG.apiKey}`
+          },
+          body: JSON.stringify({
+            model: LLM_CONFIG.model,
+            messages,
+            temperature: 0.75,
+            max_tokens: maxTokens
+          }),
+          signal: controller.signal,
+          keepalive: true
+        })
+
+        if (!response.ok) {
+          let rawBody = ''
+          try {
+            rawBody = await response.text()
+          } catch {
+            rawBody = ''
+          }
+          if (isRetryableStatus(response.status) && attempt < retryBudget) {
+            await sleep(RETRY_DELAYS_MS[attempt] || 1500)
+            continue
+          }
+          const err = new Error(`AI 请求失败: ${response.status} ${response.statusText}`) as Error & { status?: number; rawContent?: string; reason?: string }
+          err.status = response.status
+          err.rawContent = rawBody || `[无原始正文：HTTP ${response.status}]`
+          err.reason = 'http'
+          throw err
+        }
+
+        const data = await response.json()
+        const content = data?.choices?.[0]?.message?.content
+        if (!content) {
+          const err = new Error('AI 返回为空') as Error & { reason?: string }
+          err.reason = 'empty_content'
+          throw err
+        }
+        recordSuccess()
+        return content as string
+      } catch (error) {
+        const typedError = error as Error & { status?: number; reason?: string }
+        const aborted = typedError instanceof Error && typedError.name === 'AbortError'
+        const status = typedError.status
+        if (aborted) {
+          typedError.reason = 'timeout'
+        } else if (error instanceof TypeError) {
+          typedError.reason = 'network'
+        }
+        if ((aborted || error instanceof TypeError) && attempt < retryBudget) {
+          await sleep(RETRY_DELAYS_MS[attempt] || 1500)
+          continue
+        }
+        // 4xx 多为请求语义问题，不触发全局熔断，避免后续轮次全降级
+        if (!status || status >= 500 || status === 429 || aborted || error instanceof TypeError) {
+          recordFailure()
+        }
+        throw error
+      } finally {
+        clearTimeout(timer)
+      }
+    }
+
+    recordFailure()
+    throw new Error('AI 请求失败')
+  })()
+
+  inflight.set(key, requestPromise)
+  try {
+    return await requestPromise
+  } finally {
+    inflight.delete(key)
+  }
 }
 
 export async function generateRoundPack(
   history: Array<{ role: 'user' | 'scammer'; text: string }>,
   round: number,
   theme: ScenarioTheme
-): Promise<RoundPack> {
-  const content = await callLLM([
+): Promise<RoundPackResult> {
+  const buildPromptMessages = () => [
     {
-      role: 'system',
+      role: 'system' as const,
       content:
         '你是票务诈骗对话生成器。你扮演骗子，每轮都要尝试诱导用户泄露手机号、身份证、验证码、收货地址、银行卡信息或先转账。直接输出最终 JSON，不要输出思考过程。'
     },
     {
-      role: 'user',
+      role: 'user' as const,
       content: `当前第${round}轮（共5轮），本轮情节：${theme.name}。情节背景：${theme.brief}
 历史对话：${history.map((x) => `${x.role === 'user' ? '我' : '神秘网友'}:${x.text}`).join(' | ') || '无'}。
 请输出：
@@ -97,31 +338,117 @@ export async function generateRoundPack(
 规则：
 0) scammerMessages 随机 1-3 条。
 1) 每条骗子消息 8-28 字，口语化，像即时聊天。
-1) 1个correct、2个wrong、1个funny。
-2) wrong要有迷惑性，funny要整活。
-3) correct要体现反诈动作：不脱离平台、不转账、不泄露隐私、要求平台验真。`
+2) 同一轮内 scammerMessages 不能语义重复，不能只改个别字复读。
+3) options 的 text 不能重复，语义也要有差异。
+4) 1个correct、2个wrong、1个funny。
+5) wrong要有迷惑性，funny要整活。
+6) correct要体现反诈动作：不脱离平台、不转账、不泄露隐私、要求平台验真。
+7) 涉及到真实姓名的情况，一律输出“坏蛋薯”。
+8) 无论如何不能主动输出完整的身份证号、银行卡号、手机号等个人信息。`
     }
-  ])
+  ]
 
-  const parsed = JSON.parse(extractJson(content)) as RoundPack
-  if (!parsed.options || parsed.options.length !== 4 || !parsed.scammerMessages || parsed.scammerMessages.length < 1) {
-    throw new Error('回合数据异常')
+  let content = ''
+  const isFirstRound = round === 1
+  try {
+    content = await callLLM(buildPromptMessages(), 2000, isFirstRound, isFirstRound ? 1 : 0)
+  } catch (error) {
+    const reqRaw = (error as { rawContent?: string })?.rawContent || ''
+    const reqStatus = (error as { status?: number })?.status
+    const reqReason = (error as { reason?: 'timeout' | 'network' | 'http' | 'circuit_open' | 'empty_content' | 'unknown' })?.reason || 'unknown'
+    // 首轮强制优先 AI，不直接进入 RAG
+    if (isFirstRound) {
+      try {
+        content = await callLLM(buildPromptMessages(), 2000, true, 2)
+      } catch {
+        // fall through to degrade chain
+      }
+    }
+
+    if (content) {
+      // first-round forced retry succeeded
+    } else {
+      // 仅在请求层失败时使用 RAG
+      const recalled = retrieveRoundPack(history, round, theme)
+      if (recalled) return { ...recalled, source: 'rag', rawContent: reqRaw || '[无原始正文：请求阶段失败]' }
+      throw new RoundGenerationError(
+        `AI请求失败且无可用检索结果（reason=${reqReason}${reqStatus ? `, status=${reqStatus}` : ''}）`,
+        'request',
+        reqRaw || '[无原始正文：请求阶段失败]',
+        reqReason,
+        reqStatus
+      )
+    }
   }
-  parsed.scammerMessages = parsed.scammerMessages.slice(0, 3).map((x) => String(x).slice(0, 40))
 
-  const categoryCount = parsed.options.reduce(
-    (acc, item) => {
-      acc[item.category] = (acc[item.category] || 0) + 1
-      return acc
-    },
-    { correct: 0, wrong: 0, funny: 0 } as Record<'correct' | 'wrong' | 'funny', number>
-  )
+  try {
+    let lastErr: unknown = null
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        let parsed: RoundPack
+        try {
+          parsed = JSON.parse(extractJson(content)) as RoundPack
+        } catch {
+          const repaired = await callLLM([
+            {
+              role: 'system',
+              content: '你是JSON修复器。只输出合法JSON，不输出解释。'
+            },
+            {
+              role: 'user',
+              content: `把下面内容修复为合法 JSON，保持语义不变：\n${content}`
+            }
+          ], 520, true, 1)
+          parsed = JSON.parse(extractJson(repaired)) as RoundPack
+        }
 
-  if (categoryCount.correct !== 1 || categoryCount.wrong !== 2 || categoryCount.funny !== 1) {
-    throw new Error('选项类型不符合要求')
+        parsed = normalizeRoundPack(parsed)
+        parsed = enforceRoundPackSafety(parsed)
+        rememberRoundPack(history, round, theme, parsed)
+        return { ...parsed, source: 'ai' }
+      } catch (e) {
+        lastErr = e
+        if (attempt < 2) {
+          // 若发现截断，优先提高 tokens 重试，避免半截 JSON
+          const nextTokens = 2000
+          content = await callLLM(buildPromptMessages(), nextTokens, true, 1)
+        }
+      }
+    }
+    throw lastErr
+  } catch {
+    // 先尝试一次 AI 二次修复，尽量保持本轮仍为 AI 生成
+    try {
+      const regen = await callLLM([
+        {
+          role: 'system',
+          content: '你是票务反诈回合修复器。只输出合法JSON，不要解释。'
+        },
+        {
+          role: 'user',
+          content: `请重新生成第${round}轮回合JSON，要求：1个correct、2个wrong、1个funny；消息1-3条且不重复；不含隐私泄露样例。`
+        }
+      ], 360)
+
+      const repaired = JSON.parse(extractJson(regen)) as RoundPack
+      if (
+        repaired.options &&
+        repaired.options.length === 4 &&
+        repaired.scammerMessages &&
+        repaired.scammerMessages.length >= 1
+      ) {
+        repaired.scammerMessages = [...new Set(repaired.scammerMessages.slice(0, 3).map((x) => String(x).slice(0, 40)))]
+        const safe = enforceRoundPackSafety(repaired)
+        rememberRoundPack(history, round, theme, safe)
+        return { ...safe, source: 'ai' }
+      }
+    } catch {
+      // ignore and continue degrade
+    }
+    const recalled = retrieveRoundPack(history, round, theme)
+    if (recalled) return { ...recalled, source: 'rag', rawContent: content || '[无原始正文：校验阶段失败]' }
+    throw new RoundGenerationError('AI校验失败且无可用检索结果（reason=parse_or_validate）', 'parse_or_validate', content, 'unknown')
   }
-
-  return parsed
 }
 
 export async function evaluateCustomReply(
@@ -154,19 +481,16 @@ export async function evaluateCustomReply(
 }
 
 export async function generateFinalReport(
-  history: Array<{ role: 'user' | 'scammer'; text: string }>,
-  score: number
+  history: Array<{ role: 'user' | 'scammer'; text: string }>
 ): Promise<FinalReport> {
-  const presetResult: '得逞了' | '认输了' = score >= 20 ? '认输了' : '得逞了'
   const content = await callLLM([
     {
       role: 'system',
-      content: '你是反诈游戏结算器。输出骗子最终一句总结和3条科普建议，严格 JSON。直接输出最终 JSON，不要输出思考过程。'
+      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出最终一句总结和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。'
     },
     {
       role: 'user',
       content: `历史对话：${history.map((x) => `${x.role === 'user' ? '我' : '神秘网友'}:${x.text}`).join(' | ')}
-结算结果固定为：${presetResult}
 输出：
 {
   "result":"得逞了|认输了",
@@ -180,6 +504,10 @@ export async function generateFinalReport(
   if (!parsed.tips || parsed.tips.length < 3 || !parsed.scammerSummary) {
     throw new Error('结算数据异常')
   }
-  parsed.result = presetResult
+  parsed.scammerSummary = sanitizeUnsafeText(parsed.scammerSummary)
+  parsed.tips = parsed.tips.map((t) => sanitizeUnsafeText(t))
+  if (parsed.result !== '得逞了' && parsed.result !== '认输了') {
+    parsed.result = '得逞了'
+  }
   return parsed
 }
