@@ -328,10 +328,10 @@ export async function generateRoundPack(
 {
   "scammerMessages": ["骗子短消息1", "骗子短消息2", "骗子短消息3"],
   "options": [
-    {"id":"A","text":"回复话术A","category":"correct|wrong|funny"},
-    {"id":"B","text":"回复话术B","category":"correct|wrong|funny"},
-    {"id":"C","text":"回复话术C","category":"correct|wrong|funny"},
-    {"id":"D","text":"回复话术D","category":"correct|wrong|funny"}
+    {"id":"A","text":"玩家回复话术A","category":"correct|wrong|funny"},
+    {"id":"B","text":"玩家回复话术B","category":"correct|wrong|funny"},
+    {"id":"C","text":"玩家回复话术C","category":"correct|wrong|funny"},
+    {"id":"D","text":"玩家回复话术D","category":"correct|wrong|funny"}
   ],
   "correctOptionId": "A/B/C/D"
 }
@@ -346,7 +346,8 @@ export async function generateRoundPack(
 7) 涉及到真实姓名的情况，一律输出“坏蛋薯”。
 8) 无论如何不能主动输出完整的身份证号、银行卡号、手机号等个人信息。
 9) 骗子回复必须参考历史对话内容做出生动、有情绪、有变化的回应，不能机械重复套路。
-10) 轮次接近结束的时候（第四轮/第五轮），如果玩家依然采用戏耍类态度，允许回复带有轻度气急败坏情绪的内容。`
+10) 轮次接近结束的时候（第四轮/第五轮），如果玩家依然采用戏耍类态度，允许回复带有轻度气急败坏情绪的内容。
+11) options 必须是玩家视角的回复话术，不能是骗子视角的话术。正确选项是玩家识破骗局的应对方式，错误选项是玩家被误导的应对方式。`
     }
   ]
 
