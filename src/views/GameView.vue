@@ -64,6 +64,7 @@
             v-model="freeInput"
             type="text"
             placeholder="输入你自己的回复话术..."
+            maxlength="20"
             class="flex-1 border border-gray-300 rounded px-3 py-2"
             :disabled="replying || loading || delivering"
           />
@@ -229,8 +230,9 @@ async function pickOption(optionId: string) {
 
 async function sendCustomReply() {
   if (replying.value || loading.value || stage.value !== 'playing' || !freeInput.value.trim()) return
+  const text = freeInput.value.trim().slice(0, 20)
+  freeInput.value = text
   replying.value = true
-  const text = freeInput.value.trim()
 
   try {
     chatHistory.value.push({ role: 'user', text })

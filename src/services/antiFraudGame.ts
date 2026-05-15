@@ -344,14 +344,15 @@ export async function generateRoundPack(
 5) wrong要有迷惑性，funny要整活。
 6) correct要体现反诈动作：不脱离平台、不转账、不泄露隐私、要求平台验真。
 7) 涉及到真实姓名的情况，一律输出“坏蛋薯”。
-8) 无论如何不能主动输出完整的身份证号、银行卡号、手机号等个人信息。`
+8) 无论如何不能主动输出完整的身份证号、银行卡号、手机号等个人信息。
+9) 骗子回复必须根据玩家上一条回复内容做出生动、有情绪、有变化的回应，不能机械重复套路。`
     }
   ]
 
   let content = ''
   const isFirstRound = round === 1
   try {
-    content = await callLLM(buildPromptMessages(), 2000, isFirstRound, isFirstRound ? 1 : 0)
+    content = await callLLM(buildPromptMessages(), 3000, isFirstRound, isFirstRound ? 1 : 0)
   } catch (error) {
     const reqRaw = (error as { rawContent?: string })?.rawContent || ''
     const reqStatus = (error as { status?: number })?.status
@@ -359,7 +360,7 @@ export async function generateRoundPack(
     // 首轮强制优先 AI，不直接进入 RAG
     if (isFirstRound) {
       try {
-        content = await callLLM(buildPromptMessages(), 2000, true, 2)
+        content = await callLLM(buildPromptMessages(), 3000, true, 2)
       } catch {
         // fall through to degrade chain
       }
@@ -410,7 +411,7 @@ export async function generateRoundPack(
         lastErr = e
         if (attempt < 2) {
           // 若发现截断，优先提高 tokens 重试，避免半截 JSON
-          const nextTokens = 2000
+          const nextTokens = 3000
           content = await callLLM(buildPromptMessages(), nextTokens, true, 1)
         }
       }
@@ -428,7 +429,7 @@ export async function generateRoundPack(
           role: 'user',
           content: `请重新生成第${round}轮回合JSON，要求：1个correct、2个wrong、1个funny；消息1-3条且不重复；不含隐私泄露样例。`
         }
-      ], 360)
+      ], 3000)
 
       const repaired = JSON.parse(extractJson(regen)) as RoundPack
       if (
