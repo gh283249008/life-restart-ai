@@ -103,8 +103,11 @@ import {
   type ScenarioOption
 } from '@/services/antiFraudGame'
 import { resetRetrieveSession } from '@/services/ragStore'
+import { startSession, recordRoundChoice, finishSession, type ChoiceCategory } from '@/services/statsStore'
 
 type ChatMessage = { role: 'user' | 'scammer'; text: string }
+
+const sessionId = ref(`session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
 
 const round = ref(1)
 const score = ref(0)
@@ -192,6 +195,7 @@ async function endOrNextRound() {
     finalReport.value = report
     chatHistory.value.push({ role: 'scammer', text: report.scammerSummary })
     stage.value = 'final'
+    finishSession(sessionId.value, score.value, report.result)
     return
   }
 
@@ -216,6 +220,7 @@ async function pickOption(optionId: string) {
       score.value -= 5
       lastJudge.value = '本轮判定：存在风险，-5分'
     }
+    recordRoundChoice(sessionId.value, round.value, selected.category as ChoiceCategory, optionId === currentCorrectOptionId.value, currentTheme.value?.id || '', currentTheme.value?.name || '')
     await endOrNextRound()
   } finally {
     replying.value = false
@@ -239,6 +244,7 @@ async function sendCustomReply() {
     } else {
       lastJudge.value = '本轮判定：戏耍中立，积分不变'
     }
+    recordRoundChoice(sessionId.value, round.value, `custom_${result.verdict}` as ChoiceCategory, result.verdict === 'safe', currentTheme.value?.id || '', currentTheme.value?.name || '')
     freeInput.value = ''
     await endOrNextRound()
   } finally {
@@ -249,6 +255,7 @@ async function sendCustomReply() {
 async function restartGame() {
   deliveryToken.value += 1
   resetRetrieveSession()
+  sessionId.value = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   round.value = 1
   score.value = 0
   stage.value = 'playing'
@@ -264,6 +271,7 @@ async function restartGame() {
   loadError.value = ''
   rawAiError.value = ''
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+  startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)
   await loadRoundPack()
 }
 

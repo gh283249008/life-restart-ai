@@ -21,6 +21,13 @@
             >
               进入对局
             </router-link>
+            <router-link
+              to="/stats"
+              class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
+              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Stats' }"
+            >
+              统计后台
+            </router-link>
           </div>
         </div>
       </div>
