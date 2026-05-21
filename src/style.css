@@ -14,6 +14,34 @@
 }
 
 @layer components {
+  .comic-stage {
+    @apply py-2 grid gap-3 items-end;
+    grid-template-columns: 92px minmax(0, 1fr) 92px;
+    min-height: 58vh;
+  }
+
+  .comic-dialogue-stage {
+    @apply min-w-0;
+  }
+
+  .comic-portrait {
+    @apply hidden md:flex items-end justify-center;
+    min-height: 52vh;
+  }
+
+  .comic-figure {
+    @apply w-[76px] h-[220px] border-2 border-dashed rounded-2xl text-[11px] text-gray-500 bg-white/80 flex items-center justify-center text-center px-2;
+    border-color: #94a3b8;
+  }
+
+  .comic-portrait-left .comic-figure {
+    transform: rotate(-1deg);
+  }
+
+  .comic-portrait-right .comic-figure {
+    transform: rotate(1deg);
+  }
+
   .game-card {
     @apply bg-white rounded-lg shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-shadow;
   }
@@ -28,5 +56,94 @@
   
   .choice-button:hover {
     @apply transform translate-y-[-2px] shadow-md;
+  }
+
+  .comic-bubble {
+    @apply relative max-w-[85%] px-4 py-3 text-sm leading-6;
+    border-radius: 14px;
+    border: 2px solid #0f172a;
+    box-shadow: 3px 3px 0 #0f172a;
+    overflow: visible;
+  }
+
+  .comic-bubble-scammer {
+    background: #fff7ed;
+    color: #7f1d1d;
+  }
+
+  .comic-bubble-user {
+    background: #0ea5e9;
+    color: #ffffff;
+  }
+
+  .comic-bubble-scammer::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #0f172a;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    left: 14px;
+    bottom: -11px;
+  }
+
+  .comic-bubble-scammer::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 8px solid #fff7ed;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    left: 16px;
+    bottom: -8px;
+    z-index: 1;
+  }
+
+  .comic-bubble-user::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #0f172a;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    right: 14px;
+    bottom: -11px;
+  }
+
+  .comic-bubble-user::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 8px solid #0ea5e9;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    right: 16px;
+    bottom: -8px;
+    z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    .comic-stage {
+      grid-template-columns: minmax(0, 1fr);
+      min-height: auto;
+    }
+
+    .comic-bubble {
+      max-width: 92%;
+    }
+
+    .comic-bubble-scammer::after,
+    .comic-bubble-user::after {
+      bottom: -11px;
+    }
+
+    .comic-bubble-scammer::before,
+    .comic-bubble-user::before {
+      bottom: -8px;
+    }
   }
 }

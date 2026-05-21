@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 import App from './App.vue'
 import './style.css'
@@ -7,14 +7,17 @@ import './style.css'
 // 路由配置
 import HomeView from './views/HomeView.vue'
 import GameView from './views/GameView.vue'
-import StatsView from './views/StatsView.vue'
+import ResultView from './views/ResultView.vue'
+import PosterView from './views/PosterView.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [
-    { path: '/', name: 'Home', component: HomeView },
+    { path: '/', redirect: '/lobby' },
+    { path: '/lobby', name: 'Lobby', component: HomeView },
     { path: '/game', name: 'Game', component: GameView },
-    { path: '/stats', name: 'Stats', component: StatsView }
+    { path: '/result', name: 'Result', component: ResultView },
+    { path: '/poster', name: 'Poster', component: PosterView }
   ]
 })
 

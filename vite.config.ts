@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 
 export default defineConfig({
+  base: './',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -15,20 +16,20 @@ export default defineConfig({
     cors: true,
     allowedHosts: ['.monkeycode-ai.online'],
     proxy: {
-      '/deepseek': {
-        target: 'https://api.deepseek.com',
+      '/hunyuan/v1': {
+        target: 'https://tokenhub.tencentmaas.com',
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/deepseek/, ''),
+        rewrite: (path) => path.replace(/^\/hunyuan\/v1/, '/v1'),
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            console.log('deepseek proxy error', err);
+            console.log('hunyuan proxy error', err);
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to DeepSeek:', req.method, req.url);
+            console.log('Sending Request to Hunyuan:', req.method, req.url);
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from DeepSeek:', proxyRes.statusCode, req.url);
+            console.log('Received Response from Hunyuan:', proxyRes.statusCode, req.url);
           });
         },
       },

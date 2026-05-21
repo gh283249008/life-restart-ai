@@ -8,25 +8,32 @@
           <!-- 右侧菜单 -->
           <div class="hidden md:flex space-x-6">
             <router-link
-              to="/"
+              to="/lobby"
               class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
-              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Home' }"
+              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Lobby' }"
             >
-              首页
+              Lobby
             </router-link>
             <router-link
               to="/game"
               class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
               :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Game' }"
             >
-              进入对局
+              游戏
             </router-link>
             <router-link
-              to="/stats"
+              to="/result"
               class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
-              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Stats' }"
+              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Result' }"
             >
-              统计后台
+              结算
+            </router-link>
+            <router-link
+              to="/poster"
+              class="text-gray-600 hover:text-primary-600 px-3 py-2 rounded-md transition-colors"
+              :class="{ 'text-primary-600 bg-primary-50': $route.name === 'Poster' }"
+            >
+              海报
             </router-link>
           </div>
         </div>

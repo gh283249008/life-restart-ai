@@ -131,18 +131,37 @@ function normalizeRoundPack(raw: RoundPack): RoundPack {
   }
 
   const validCategory = (x: unknown): x is 'correct' | 'wrong' | 'funny' => x === 'correct' || x === 'wrong' || x === 'funny'
-  const assigned = rawOptions.map((o) => ({ ...o, category: validCategory(o.category) ? o.category : 'wrong' as const }))
+  const fixed = rawOptions.map((o) => ({ ...o, category: validCategory(o.category) ? o.category : 'wrong' as const }))
 
-  // 强制归一：1 correct + 2 wrong + 1 funny
-  const firstCorrect = assigned.findIndex((o) => o.category === 'correct')
-  const firstFunny = assigned.findIndex((o) => o.category === 'funny')
-  if (firstCorrect === -1) assigned[0].category = 'correct'
-  if (firstFunny === -1) assigned[3].category = 'funny'
+  // 强制归一：保留原始语义，修正数量为 1 correct + 2 wrong + 1 funny
+  const ensureCount = (target: 'correct' | 'wrong' | 'funny', expected: number) => {
+    const count = fixed.filter((o) => o.category === target).length
+    if (count < expected) {
+      let need = expected - count
+      for (const item of fixed) {
+        if (need <= 0) break
+        if (item.category !== target) {
+          item.category = target
+          need -= 1
+        }
+      }
+      return
+    }
 
-  const fixed = assigned.map((o, i) => ({
-    ...o,
-    category: i === 0 ? 'correct' as const : i === 3 ? 'funny' as const : 'wrong' as const
-  }))
+    if (count > expected) {
+      let extra = count - expected
+      for (let i = fixed.length - 1; i >= 0 && extra > 0; i -= 1) {
+        if (fixed[i].category === target) {
+          fixed[i].category = 'wrong'
+          extra -= 1
+        }
+      }
+    }
+  }
+
+  ensureCount('correct', 1)
+  ensureCount('funny', 1)
+  ensureCount('wrong', 2)
 
   const correctOptionId = fixed.find((x) => x.category === 'correct')?.id || 'A'
 
@@ -231,7 +250,18 @@ async function callLLM(
       const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
       try {
-        const response = await fetch(`${LLM_CONFIG.baseUrl}/chat/completions`, {
+        const systemParts = messages.filter((m) => m.role === 'system').map((m) => m.content)
+        const mergedInstructions = [
+          LLM_CONFIG.noThinking ? 'No thinking mode. Output final answer directly.' : '',
+          ...systemParts
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+        const nonSystemParts = messages
+          .filter((m) => m.role !== 'system')
+          .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+
+        const response = await fetch(`${LLM_CONFIG.baseUrl}/responses`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -239,9 +269,12 @@ async function callLLM(
           },
           body: JSON.stringify({
             model: LLM_CONFIG.model,
-            messages,
-            temperature: 0.75,
-            max_tokens: maxTokens
+            instructions: mergedInstructions || 'You are a helpful assistant.',
+            input: nonSystemParts.join('\n\n') || '你好',
+            stream: false,
+            thinking: LLM_CONFIG.noThinking ? false : undefined,
+            temperature: 0.5,
+            max_output_tokens: maxTokens
           }),
           signal: controller.signal,
           keepalive: true
@@ -266,7 +299,15 @@ async function callLLM(
         }
 
         const data = await response.json()
-        const content = data?.choices?.[0]?.message?.content
+        const outputText = data?.output_text
+        const outputArrayText = Array.isArray(data?.output)
+          ? data.output
+              .flatMap((item: { content?: Array<{ text?: string }> }) => item?.content || [])
+              .map((c: { text?: string }) => c?.text || '')
+              .join('\n')
+          : ''
+        const compatChoiceText = data?.choices?.[0]?.message?.content
+        const content = outputText || outputArrayText || compatChoiceText
         if (!content) {
           const err = new Error('AI 返回为空') as Error & { reason?: string }
           err.reason = 'empty_content'
@@ -347,7 +388,8 @@ export async function generateRoundPack(
 8) 无论如何不能主动输出完整的身份证号、银行卡号、手机号等个人信息。
 9) 骗子回复必须参考历史对话内容做出生动、有情绪、有变化的回应，不能机械重复套路。
 10) 轮次接近结束的时候（第四轮/第五轮），如果玩家依然采用戏耍类态度，允许回复带有轻度气急败坏情绪的内容。
-11) options 必须是玩家视角的回复话术，不能是骗子视角的话术。正确选项是玩家识破骗局的应对方式，错误选项是玩家被误导的应对方式。`
+ 11) options 必须是玩家视角的回复话术，不能是骗子视角的话术。正确选项是玩家识破骗局的应对方式，错误选项是玩家被误导的应对方式。
+ 12) 对话将用于左右两个角色的漫画分镜，请输出更有戏剧张力和角色个性的短句，避免平铺直叙。`
     }
   ]
 
