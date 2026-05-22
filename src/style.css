@@ -2,10 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'FZLTKH-GBK-Var';
+  src: url('/fonts/fzltkh-gbk.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 自定义样式 */
 @layer base {
   html {
-    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-family: 'FZLTKH-GBK-Var', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   }
   
   body {
@@ -189,6 +197,32 @@
     right: 16px;
     bottom: -8px;
     z-index: 1;
+  }
+
+  .bubble-leaving {
+    animation: bubble-fade-up 0.22s ease forwards;
+    pointer-events: none;
+  }
+
+  @keyframes bubble-fade-up {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-16px) scale(0.98);
+    }
+  }
+
+  .scam-image {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    border-radius: 10px;
+    border: 2px solid rgba(15, 23, 42, 0.22);
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    object-fit: cover;
   }
 
   @media (max-width: 768px) {

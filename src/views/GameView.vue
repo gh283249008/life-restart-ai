@@ -36,12 +36,20 @@
       <div class="comic-dialogue-stage">
         <div class="h-full space-y-3 px-3 pb-2 pt-1 overflow-hidden">
           <div
-            v-for="(item, idx) in visibleHistory"
-            :key="idx"
+            v-for="item in visibleHistory"
+            :key="item.uid"
             class="flex items-end"
-            :class="item.role === 'user' ? 'justify-end' : 'justify-start'"
+            :class="[item.role === 'user' ? 'justify-end' : 'justify-start', item.leaving ? 'bubble-leaving' : '']"
           >
-            <div class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">{{ item.text }}</div>
+            <div class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">
+              <template v-if="item.imageUrl">
+                <img :src="item.imageUrl" alt="内部专享票" class="scam-image" />
+                <p v-if="item.text" class="mt-2">{{ item.text }}</p>
+              </template>
+              <template v-else>
+                {{ item.text }}
+              </template>
+            </div>
           </div>
         </div>
       </div>
@@ -73,7 +81,10 @@ import { resetRetrieveSession } from '@/services/ragStore'
 import { startSession, recordRoundChoice, finishSession, type ChoiceCategory } from '@/services/statsStore'
 import { saveGameResultSnapshot, clearGameResultSnapshot } from '@/services/gameSessionStore'
 
-type ChatMessage = { role: 'user' | 'scammer'; text: string }
+type ChatMessage = { role: 'user' | 'scammer'; text: string; imageUrl?: string }
+type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean }
+
+const INTERNAL_TICKET_IMAGE_URL = 'https://monkeycode-temporary.oss-cn-hangzhou.aliyuncs.com/temporary%2F019dd754-1933-7607-8967-90a23c832ba6_1288fd70ff60cee91f86897a84aac278.jpg?Expires=1780033593&OSSAccessKeyId=LTAI5tP2W4mnLDh2HPZHZwkm&Signature=nJIPid%2FfFzX87ETypBGMAmUEPhA%3D'
 
 const sessionId = ref(`session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
 const router = useRouter()
@@ -87,7 +98,7 @@ const replying = ref(false)
 const deliveryToken = ref(0)
 
 const chatHistory = ref<ChatMessage[]>([])
-const visibleHistory = ref<ChatMessage[]>([])
+const visibleHistory = ref<VisibleMessage[]>([])
 const currentOptions = ref<ScenarioOption[]>([])
 const currentCorrectOptionId = ref('')
 const finalReport = ref<FinalReport | null>(null)
@@ -99,6 +110,8 @@ const loadError = ref('')
 const rawAiError = ref('')
 const typingIndicatorText = '神秘网友正在输入...'
 const showChoicePanel = ref(false)
+const imageScamCount = ref(0)
+let visibleUid = 0
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -107,24 +120,58 @@ function sleep(ms: number) {
 async function pushWithTyping(role: 'user' | 'scammer', fullText: string, token: number) {
   const text = String(fullText).trim()
   if (!text) return
-  visibleHistory.value.push({ role, text: '' })
-  const msgIndex = visibleHistory.value.length - 1
+  const bubble = await pushVisibleBubble({ role, text: '' }, token)
+  if (!bubble) return
 
   for (let i = 0; i < text.length; i += 1) {
     if (token !== deliveryToken.value) return
+    const msgIndex = visibleHistory.value.findIndex((x) => x.uid === bubble.uid)
+    if (msgIndex === -1) return
     visibleHistory.value[msgIndex].text = text.slice(0, i + 1)
     await nextTick()
     await sleep(28 + Math.floor(Math.random() * 36))
   }
 }
 
+async function shrinkTopBubble(token: number) {
+  if (visibleHistory.value.length < 2) return
+  const top = visibleHistory.value[0]
+  if (!top) return
+  top.leaving = true
+  await nextTick()
+  await sleep(220)
+  if (token !== deliveryToken.value) return
+  if (visibleHistory.value[0]?.uid === top.uid) {
+    visibleHistory.value.shift()
+  } else {
+    const idx = visibleHistory.value.findIndex((x) => x.uid === top.uid)
+    if (idx >= 0) visibleHistory.value.splice(idx, 1)
+  }
+}
+
+async function pushVisibleBubble(message: ChatMessage, token: number): Promise<VisibleMessage | null> {
+  if (visibleHistory.value.length >= 2) {
+    await shrinkTopBubble(token)
+  }
+  if (token !== deliveryToken.value) return null
+  const bubble: VisibleMessage = {
+    ...message,
+    uid: ++visibleUid,
+    leaving: false
+  }
+  visibleHistory.value.push(bubble)
+  return bubble
+}
+
 async function ensureTypingIndicator(token: number) {
   const last = visibleHistory.value[visibleHistory.value.length - 1]
   if (last?.role === 'scammer' && last.text === typingIndicatorText) return
-  visibleHistory.value.push({ role: 'scammer', text: '' })
-  const idx = visibleHistory.value.length - 1
+  const bubble = await pushVisibleBubble({ role: 'scammer', text: '' }, token)
+  if (!bubble) return
   for (let i = 0; i < typingIndicatorText.length; i += 1) {
     if (token !== deliveryToken.value) return
+    const idx = visibleHistory.value.findIndex((x) => x.uid === bubble.uid)
+    if (idx === -1) return
     visibleHistory.value[idx].text = typingIndicatorText.slice(0, i + 1)
     await nextTick()
     await sleep(22)
@@ -186,6 +233,29 @@ async function deliverScammerMessages(messages: string[], token: number) {
   }
 }
 
+function shouldInjectScamImage(): boolean {
+  if (round.value < 2 || round.value > 4) return false
+  if (imageScamCount.value >= 1) return false
+  return Math.random() < 0.42
+}
+
+async function injectScamImage(token: number) {
+  if (token !== deliveryToken.value) return
+  await sleep(220)
+  if (token !== deliveryToken.value) return
+
+  await pushVisibleBubble({
+    role: 'scammer',
+    text: '',
+    imageUrl: INTERNAL_TICKET_IMAGE_URL
+  }, token)
+  chatHistory.value.push({
+    role: 'scammer',
+    text: '（骗子发送了一张“内部专享票”图片，诱导私聊锁票）'
+  })
+  imageScamCount.value += 1
+}
+
 async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPackResult>) {
   loading.value = true
   showChoicePanel.value = false
@@ -203,6 +273,9 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
     rawAiError.value = pack.source === 'rag' ? (pack.rawContent || '[无原始正文]') : ''
     await eraseTypingIndicator(token)
     await deliverScammerMessages(pack.scammerMessages, token)
+    if (shouldInjectScamImage()) {
+      await injectScamImage(token)
+    }
     currentOptions.value = pack.options
     currentCorrectOptionId.value = pack.correctOptionId
     showChoicePanel.value = true
@@ -305,6 +378,7 @@ async function restartGame() {
   sessionRagUsed.value = false
   loadError.value = ''
   rawAiError.value = ''
+  imageScamCount.value = 0
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
   showChoicePanel.value = false
   startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)

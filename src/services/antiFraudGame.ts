@@ -62,6 +62,35 @@ export const SCENARIO_THEMES: ScenarioTheme[] = [
 ]
 
 const unsafeKeywordList = ['色情', '裸聊', '约炮', '毒品', '爆炸物', '种族清洗']
+const staleOptionPatterns = [
+  '抢得到算我输',
+  '不行你报警吧',
+  '你先转再说',
+  '爱信不信',
+  '机不可失',
+  '最后一张'
+]
+
+const fallbackOptionPool: Record<'correct' | 'wrong' | 'funny', string[]> = {
+  correct: [
+    '只走平台验真流程，私下转账我不参与。',
+    '先把票挂官方平台，我验真通过再下单。',
+    '我只接受平台担保交易，其他方式都不聊。',
+    '不给个人信息，不脱离平台，这单先按规则来。'
+  ],
+  wrong: [
+    '我先打你一半定金，余款见票再补。',
+    '我现在就转，你把验证码也一起发我。',
+    '别催了，我直接全款打过去，快把链接给我。',
+    '你都这么急了，我先付款占位，手续回头补。'
+  ],
+  funny: [
+    '票先别急，你先通过我的反诈段位考试。',
+    '可以交易，前提是你先背三遍防骗顺口溜。',
+    '你先发一张今天的空气照，我再决定信不信。',
+    '成交前先回答：诈骗克星是谁。'
+  ]
+}
 
 function sanitizeUnsafeText(text: string): string {
   let safe = String(text)
@@ -169,6 +198,70 @@ function normalizeRoundPack(raw: RoundPack): RoundPack {
     scammerMessages: baseMessages,
     options: fixed,
     correctOptionId
+  }
+}
+
+function normalizeForCompare(text: string): string {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]/gu, '')
+}
+
+function containsStalePattern(text: string): boolean {
+  return staleOptionPatterns.some((p) => String(text).includes(p))
+}
+
+function similarityByCharSet(a: string, b: string): number {
+  const sa = new Set(normalizeForCompare(a).split(''))
+  const sb = new Set(normalizeForCompare(b).split(''))
+  if (sa.size === 0 || sb.size === 0) return 0
+  let inter = 0
+  for (const ch of sa) {
+    if (sb.has(ch)) inter += 1
+  }
+  return inter / Math.max(sa.size, sb.size)
+}
+
+function makeOptionDiversityGuard(
+  history: Array<{ role: 'user' | 'scammer'; text: string }>,
+  round: number
+) {
+  const historyTexts = history
+    .filter((x) => x.role === 'user')
+    .map((x) => String(x.text || '').trim())
+    .filter(Boolean)
+
+  return (pack: RoundPack): RoundPack => {
+    const usedInRound = new Set<string>()
+
+    const diversified = pack.options.map((opt, idx) => {
+      const original = String(opt.text || '').trim()
+      const duplicateInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, original) >= 0.82)
+      const similarToHistory = historyTexts.some((x) => similarityByCharSet(x, original) >= 0.86)
+      const stale = containsStalePattern(original)
+
+      let text = original
+      if (stale || duplicateInRound || similarToHistory) {
+        const pool = fallbackOptionPool[opt.category]
+        const start = (round + idx) % pool.length
+        let picked = pool[start]
+        for (let i = 0; i < pool.length; i += 1) {
+          const candidate = pool[(start + i) % pool.length]
+          const badInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, candidate) >= 0.82)
+          const badInHistory = historyTexts.some((x) => similarityByCharSet(x, candidate) >= 0.86)
+          if (!badInRound && !badInHistory) {
+            picked = candidate
+            break
+          }
+        }
+        text = picked
+      }
+
+      usedInRound.add(text)
+      return { ...opt, text }
+    })
+
+    return { ...pack, options: diversified }
   }
 }
 
@@ -355,11 +448,12 @@ export async function generateRoundPack(
   round: number,
   theme: ScenarioTheme
 ): Promise<RoundPackResult> {
+  const diversifyOptions = makeOptionDiversityGuard(history, round)
   const buildPromptMessages = () => [
     {
       role: 'system' as const,
       content:
-        '你是票务诈骗对话生成器。你扮演骗子，每轮都要尝试诱导用户泄露手机号、身份证、验证码、收货地址、银行卡信息或先转账。直接输出最终 JSON，不要输出思考过程。'
+        '你是票务诈骗对话生成器。你扮演骗子“坏窝瓜”，每轮尝试诱导用户泄露隐私或先转账。输出必须是最终 JSON，不要输出思考过程。'
     },
     {
       role: 'user' as const,
@@ -377,19 +471,19 @@ export async function generateRoundPack(
   "correctOptionId": "A/B/C/D"
 }
 规则：
-0) scammerMessages 随机 1-3 条。
-1) 每条骗子消息 8-28 字，口语化，像即时聊天。
-2) 同一轮内 scammerMessages 不能语义重复，不能只改个别字复读。
-3) options 的 text 不能重复，语义也要有差异。
-4) 1个correct、2个wrong、1个funny。
-5) wrong要有迷惑性，funny要整活。
-6) correct要体现反诈动作：不脱离平台、不转账、不泄露隐私、要求平台验真。
-7) 涉及到真实姓名的情况，一律输出“坏蛋薯”。
-8) 无论如何不能主动输出完整的身份证号、银行卡号、手机号等个人信息。
-9) 骗子回复必须参考历史对话内容做出生动、有情绪、有变化的回应，不能机械重复套路。
-10) 轮次接近结束的时候（第四轮/第五轮），如果玩家依然采用戏耍类态度，允许回复带有轻度气急败坏情绪的内容。
- 11) options 必须是玩家视角的回复话术，不能是骗子视角的话术。正确选项是玩家识破骗局的应对方式，错误选项是玩家被误导的应对方式。
- 12) 对话将用于左右两个角色的漫画分镜，请输出更有戏剧张力和角色个性的短句，避免平铺直叙。`
+1) scammerMessages 输出 1-3 条，每条 8-28 字，必须口语化，像即时聊天。
+2) 同一轮内骗子消息不能语义复读；必须参考历史对话推进情节。
+3) options 必须 4 条且不重复：1个correct、2个wrong、1个funny；四条在语义意图上必须明显不同。
+4) options 全部是玩家视角回复话术。correct体现反诈动作（不脱离平台、不转账、不泄露隐私、要求平台验真）；wrong有迷惑性；funny可整活。
+5) 对话中不要出现任何真实姓名；仅在必须使用称呼时可用“坏窝瓜”作为骗子代称，但禁止高频重复自称“坏窝瓜”。
+6) 回复内容禁止出现脏话或辱骂词，如“傻蛋”“笨蛋”“傻逼”等。
+7) 禁止输出完整身份证号、银行卡号、手机号、验证码等隐私信息。
+8) 第四/第五轮若玩家持续戏耍，允许骗子出现轻度气急败坏情绪。
+9) 语言风格要求：小红书语感，年轻口语、轻情绪、网感表达；短句、有节奏、可截图传播。
+10) 对话将用于左右角色漫画分镜，台词要有戏剧张力与角色感。
+11) 禁止复用高频模板句。像“抢得到算我输”“不行你报警吧”“你先转再说”这类整句在单局内最多出现一次，后续必须换表达。
+12) wrong 的两个选项必须采用不同诱导策略（如“先付定金型”与“情绪施压型”），不能只换个别字。
+13) funny 选项每轮都要有新梗，禁止与历史 funny 选项高相似复述（避免仅替换 1-2 个词）。`
     }
   ]
 
@@ -449,6 +543,7 @@ export async function generateRoundPack(
 
         parsed = normalizeRoundPack(parsed)
         parsed = enforceRoundPackSafety(parsed)
+        parsed = diversifyOptions(parsed)
         rememberRoundPack(history, round, theme, parsed)
         return { ...parsed, source: 'ai' }
       } catch (e) {
@@ -483,7 +578,9 @@ export async function generateRoundPack(
         repaired.scammerMessages.length >= 1
       ) {
         repaired.scammerMessages = [...new Set(repaired.scammerMessages.slice(0, 3).map((x) => String(x).slice(0, 40)))]
-        const safe = enforceRoundPackSafety(repaired)
+        let safe = enforceRoundPackSafety(repaired)
+        safe = normalizeRoundPack(safe)
+        safe = diversifyOptions(safe)
         rememberRoundPack(history, round, theme, safe)
         return { ...safe, source: 'ai' }
       }
