@@ -15,7 +15,7 @@
 
     <div class="game-card">
       <div class="flex flex-col sm:flex-row gap-3">
-        <button class="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" @click="copyShareText">复制文案</button>
+        <button class="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" @click="shareToXiaohongshu">一键分享到小红书</button>
         <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="openSafeShuProfile">关注安全薯</button>
         <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="backResult">返回结算页</button>
         <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="backLobby">返回大厅</button>
@@ -41,20 +41,28 @@ import { openSafeShuProfile } from '@/services/safeShuLink'
 const router = useRouter()
 const snapshot = computed(() => loadGameResultSnapshot())
 const copyTip = ref('')
+const XHS_PUBLISH_DEEPLINK =
+  'xhsdiscover://post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
 
-const shareText = computed(() => {
-  if (!snapshot.value) return ''
-  const theme = snapshot.value.theme?.name || '票务反诈'
-  return `我在「好薯坏薯・票务反诈局」完成了一局${theme}挑战，结果是骗子${snapshot.value.finalReport.result}，得分${snapshot.value.score}。你也来试试！`
-})
+function shareToXiaohongshu() {
+  copyTip.value = '正在打开小红书发布页...'
+  const startedAt = Date.now()
 
-async function copyShareText() {
-  try {
-    await navigator.clipboard.writeText(shareText.value)
-    copyTip.value = '文案已复制，去发布页粘贴即可。'
-  } catch {
-    copyTip.value = '复制失败，请手动选择文案复制。'
+  const timer = window.setTimeout(() => {
+    if (Date.now() - startedAt < 1300) return
+    copyTip.value = '未检测到小红书客户端，请确认已安装后重试。'
+  }, 1500)
+
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      window.clearTimeout(timer)
+      copyTip.value = ''
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
   }
+
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.location.href = XHS_PUBLISH_DEEPLINK
 }
 
 async function backResult() {

@@ -1,5 +1,34 @@
 <template>
   <div class="h-full flex flex-col gap-3 relative">
+    <div v-if="showIntroModal" class="intro-mask">
+      <div class="intro-modal game-card">
+        <h3 class="intro-title intro-segment" :class="{ 'is-visible': introStage >= 1 }">开局说明</h3>
+        <p class="intro-lead intro-segment" :class="{ 'is-visible': introStage >= 2 }">邪恶的坏窝瓜总爱伪装成票务卖家，专门套取隐私和转账。你将化身反诈小侦探，在 5 轮交锋里识破它的计谋。</p>
+        <div class="intro-steps">
+          <p class="intro-segment" :class="{ 'is-visible': introStage >= 3 }"><strong>玩法：</strong>每轮 4 个选项，尽量选择不转账、不泄露隐私、要求平台验真的回复。</p>
+          <p class="intro-segment" :class="{ 'is-visible': introStage >= 4 }"><strong>计分：</strong>选中正确反诈动作 +10，风险选择 -5，整活为中立。</p>
+        </div>
+        <div class="intro-tips intro-segment" :class="{ 'is-visible': introStage >= 5 }">
+          <p class="intro-tips-title">反诈小贴士</p>
+          <ul>
+            <li class="intro-segment" :class="{ 'is-visible': introStage >= 6 }">任何“先转账后验票”都高风险。</li>
+            <li class="intro-segment" :class="{ 'is-visible': introStage >= 7 }">验证码、身份证、银行卡信息都不能给陌生人。</li>
+            <li class="intro-segment" :class="{ 'is-visible': introStage >= 8 }">只走官方平台交易与验真流程。</li>
+          </ul>
+        </div>
+        <div class="intro-confirm-slot">
+          <button
+            class="intro-confirm intro-segment"
+            :class="{ 'is-visible': introReady }"
+            @click="confirmIntroAndStart"
+            :disabled="startingFromIntro || !introReady"
+          >
+          {{ startingFromIntro ? '加载中...' : '我知道了，开始鉴别' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <template v-if="stage === 'playing'">
       <div class="absolute inset-x-0 bottom-0 z-30 px-1 pb-1">
         <div v-if="loadError" class="game-card text-center text-red-700">
@@ -151,6 +180,11 @@ const showChoicePanel = ref(false)
 const imageScamCount = ref(0)
 const shownScamImageKinds = ref<Set<ScamImageKind>>(new Set())
 const funnyRoundCount = ref(0)
+const showIntroModal = ref(true)
+const startingFromIntro = ref(false)
+const firstRoundPrefetch = ref<Promise<RoundPackResult> | null>(null)
+const introStage = ref(0)
+const introReady = ref(false)
 let visibleUid = 0
 
 function preloadScamImages() {
@@ -158,6 +192,18 @@ function preloadScamImages() {
     const img = new Image()
     img.src = item.url
   }
+}
+
+async function playIntroReveal() {
+  introStage.value = 0
+  introReady.value = false
+  const totalStages = 8
+  for (let i = 1; i <= totalStages; i += 1) {
+    if (!showIntroModal.value) return
+    introStage.value = i
+    await sleep(360)
+  }
+  introReady.value = true
 }
 
 function sleep(ms: number) {
@@ -333,7 +379,16 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
     if (!currentTheme.value) {
       currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
     }
-    const pack = prefetchedPack ? await prefetchedPack : await generateRoundPack(chatHistory.value, round.value, currentTheme.value)
+    const livePackPromise = generateRoundPack(chatHistory.value, round.value, currentTheme.value)
+    const pack = prefetchedPack
+      ? await Promise.race([
+          Promise.resolve(prefetchedPack),
+          (async () => {
+            await sleep(1800)
+            return await livePackPromise
+          })()
+        ]).catch(async () => await livePackPromise)
+      : await livePackPromise
     roundSource.value = pack.source === 'ai' ? 'AI生成' : '检索兜底'
     if (pack.source === 'rag') sessionRagUsed.value = true
     loadError.value = ''
@@ -360,6 +415,28 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
     }
   } finally {
     loading.value = false
+  }
+}
+
+function prefetchFirstRound() {
+  if (!currentTheme.value) {
+    currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+  }
+  firstRoundPrefetch.value = generateRoundPack(chatHistory.value, 1, currentTheme.value).catch((err) => {
+    firstRoundPrefetch.value = null
+    throw err
+  })
+}
+
+async function confirmIntroAndStart() {
+  if (startingFromIntro.value) return
+  startingFromIntro.value = true
+  showIntroModal.value = false
+  try {
+    await loadRoundPack(firstRoundPrefetch.value || undefined)
+  } finally {
+    startingFromIntro.value = false
+    firstRoundPrefetch.value = null
   }
 }
 
@@ -468,10 +545,16 @@ async function restartGame() {
   imageScamCount.value = 0
   shownScamImageKinds.value = new Set()
   funnyRoundCount.value = 0
+  showIntroModal.value = true
+  startingFromIntro.value = false
+  firstRoundPrefetch.value = null
+  introStage.value = 0
+  introReady.value = false
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
   showChoicePanel.value = false
   startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)
-  await loadRoundPack()
+  prefetchFirstRound()
+  void playIntroReveal()
 }
 
 onMounted(() => {
