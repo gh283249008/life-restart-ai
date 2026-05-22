@@ -101,10 +101,24 @@
   
   .choice-button {
     @apply w-full p-2.5 text-left bg-white border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
   }
   
   .choice-button:hover {
     @apply transform translate-y-[-2px] shadow-md;
+  }
+
+  .choice-button:focus,
+  .choice-button:focus-visible {
+    border-color: #cbd5e1;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  .choice-button:active {
+    transform: translateY(0);
+    background: #f8fafc;
   }
 
   .choice-panel-enter-active,
@@ -224,6 +238,118 @@
     box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
     object-fit: cover;
   }
+
+  .scam-image-fake-payment {
+    max-width: 110px;
+  }
+
+  .voice-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .voice-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 92%;
+  }
+
+  .voice-bubble {
+    width: 168px;
+    height: 56px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 14px;
+    box-sizing: border-box;
+  }
+
+  .voice-bubble-scammer {
+    background: transparent;
+  }
+
+  .voice-icon {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    flex: none;
+  }
+
+  .voice-icon::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 9px solid #111827;
+  }
+
+  .voice-icon::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 10px;
+    border-radius: 999px;
+    border: 2px solid #111827;
+    border-left: 0;
+    opacity: 0.75;
+  }
+
+  .voice-duration {
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .voice-gap {
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+  }
+
+  .voice-row-scammer .voice-duration {
+    color: #1f1f1f;
+  }
+
+  .voice-unread-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff5a57;
+    flex: none;
+  }
+
+  .voice-transcribe {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    height: 34px;
+    border-radius: 999px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+    color: #a7a7a7;
+    box-sizing: border-box;
+  }
+
+  .voice-transcribe-outside {
+    flex: none;
+  }
+
 
   @media (max-width: 768px) {
     .phone-stage {

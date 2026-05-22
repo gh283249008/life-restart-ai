@@ -46,6 +46,30 @@ export interface FinalReport {
   tips: string[]
 }
 
+export async function generateFinalScammerReply(
+  history: Array<{ role: 'user' | 'scammer'; text: string }>
+): Promise<string> {
+  const content = await callLLM([
+    {
+      role: 'system',
+      content:
+        '你是票务诈骗对话生成器中的骗子角色。请基于整局对话给出一句收尾答复。输出纯文本一句话，不要JSON，不要解释，不要思考过程。'
+    },
+    {
+      role: 'user',
+      content: `历史对话：${history.map((x) => `${x.role === 'user' ? '我' : '神秘网友'}:${x.text}`).join(' | ')}
+要求：
+1) 只输出一句骗子口吻收尾台词，8-24字。
+2) 可体现破防、认栽、嘴硬、撤退其一。
+3) 不包含脏话，不包含隐私信息。`
+    }
+  ], 120)
+
+  const line = sanitizeUnsafeText(String(content || '').trim().replace(/[\r\n]+/g, ' '))
+  if (!line) return '行，你先忙，我撤了。'
+  return line.slice(0, 36)
+}
+
 export interface ScenarioTheme {
   id: string
   name: string
@@ -58,7 +82,11 @@ export const SCENARIO_THEMES: ScenarioTheme[] = [
   { id: 'school_show', name: '校园拼团票', brief: '校园群聊拼团买票，骗子冒充团长收集个人信息。' },
   { id: 'last_minute', name: '开场前捡漏', brief: '临开场前放票，骗子制造紧迫感诱导快速转账。' },
   { id: 'fan_group', name: '粉丝群代抢', brief: '骗子冒充后援会管理员，诱导提供账号和验证码。' },
-  { id: 'overseas_show', name: '海外场次代购', brief: '跨境票务代购，骗子以海关和税费名义二次收费。' }
+  { id: 'overseas_show', name: '海外场次代购', brief: '跨境票务代购，骗子以海关和税费名义二次收费。' },
+  { id: 'sports_event', name: '体育赛事（含世界杯）', brief: '世界杯、联赛和总决赛等热门场次一票难求，骗子冒充内部渠道或临时放票，诱导先款后票与私下交易。' },
+  { id: 'scalper_ticket', name: '黄牛票', brief: '骗子伪装黄牛称有保真票源，诱导脱离平台并追加“加急费”。' },
+  { id: 'fake_platform', name: '假平台/二手买票平台', brief: '骗子发送仿冒票务平台链接，诱导登录并窃取账号和支付信息。' },
+  { id: 'refund_scam', name: '退票诈骗', brief: '骗子冒充客服办理退票退款，诱导提供验证码或进行屏幕共享。' }
 ]
 
 const unsafeKeywordList = ['色情', '裸聊', '约炮', '毒品', '爆炸物', '种族清洗']

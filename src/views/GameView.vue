@@ -41,9 +41,24 @@
             class="flex items-end"
             :class="[item.role === 'user' ? 'justify-end' : 'justify-start', item.leaving ? 'bubble-leaving' : '']"
           >
-            <div class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">
+            <template v-if="item.voiceDurationSec">
+              <div class="voice-wrap voice-wrap-scammer">
+                <div class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">
+                  <div class="voice-row voice-row-scammer">
+                    <div class="voice-bubble voice-bubble-scammer">
+                      <span class="voice-icon" aria-hidden="true"></span>
+                      <span class="voice-gap" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                      <span class="voice-duration">{{ item.voiceDurationSec }}s</span>
+                    </div>
+                    <span v-if="item.unread" class="voice-unread-dot" aria-label="未读"></span>
+                  </div>
+                </div>
+                <span class="voice-transcribe voice-transcribe-outside">转文字</span>
+              </div>
+            </template>
+            <div v-else class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">
               <template v-if="item.imageUrl">
-                <img :src="item.imageUrl" alt="内部专享票" class="scam-image" />
+                <img :src="item.imageUrl" alt="内部专享票" :class="['scam-image', item.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
                 <p v-if="item.text" class="mt-2">{{ item.text }}</p>
               </template>
               <template v-else>
@@ -69,6 +84,7 @@ import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   generateFinalReport,
+  generateFinalScammerReply,
   generateRoundPack,
   RoundGenerationError,
   SCENARIO_THEMES,
@@ -81,10 +97,32 @@ import { resetRetrieveSession } from '@/services/ragStore'
 import { startSession, recordRoundChoice, finishSession, type ChoiceCategory } from '@/services/statsStore'
 import { saveGameResultSnapshot, clearGameResultSnapshot } from '@/services/gameSessionStore'
 
-type ChatMessage = { role: 'user' | 'scammer'; text: string; imageUrl?: string }
+type ChatMessage = {
+  role: 'user' | 'scammer'
+  text: string
+  imageUrl?: string
+  voiceDurationSec?: number
+  unread?: boolean
+}
 type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean }
 
-const INTERNAL_TICKET_IMAGE_URL = 'https://monkeycode-temporary.oss-cn-hangzhou.aliyuncs.com/temporary%2F019dd754-1933-7607-8967-90a23c832ba6_1288fd70ff60cee91f86897a84aac278.jpg?Expires=1780033593&OSSAccessKeyId=LTAI5tP2W4mnLDh2HPZHZwkm&Signature=nJIPid%2FfFzX87ETypBGMAmUEPhA%3D'
+const INTERNAL_TICKET_IMAGE_URL = '/images/scam-internal-ticket.jpg'
+const FAKE_PAYMENT_IMAGE_URL = '/images/scam-fake-payment.jpg'
+
+type ScamImageKind = 'internal_ticket' | 'fake_payment'
+
+const SCAM_IMAGE_POOL: Array<{ kind: ScamImageKind; url: string; narrative: string }> = [
+  {
+    kind: 'internal_ticket',
+    url: INTERNAL_TICKET_IMAGE_URL,
+    narrative: '（骗子发送了一张“内部专享票”图片，诱导私聊锁票）'
+  },
+  {
+    kind: 'fake_payment',
+    url: FAKE_PAYMENT_IMAGE_URL,
+    narrative: '（骗子发送了一张“虚假支付截图”，诱导你先放票或补尾款）'
+  }
+]
 
 const sessionId = ref(`session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
 const router = useRouter()
@@ -111,7 +149,16 @@ const rawAiError = ref('')
 const typingIndicatorText = '神秘网友正在输入...'
 const showChoicePanel = ref(false)
 const imageScamCount = ref(0)
+const shownScamImageKinds = ref<Set<ScamImageKind>>(new Set())
+const funnyRoundCount = ref(0)
 let visibleUid = 0
+
+function preloadScamImages() {
+  for (const item of SCAM_IMAGE_POOL) {
+    const img = new Image()
+    img.src = item.url
+  }
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -235,7 +282,8 @@ async function deliverScammerMessages(messages: string[], token: number) {
 
 function shouldInjectScamImage(): boolean {
   if (round.value < 2 || round.value > 4) return false
-  if (imageScamCount.value >= 1) return false
+  if (imageScamCount.value >= 2) return false
+  if (shownScamImageKinds.value.size >= SCAM_IMAGE_POOL.length) return false
   return Math.random() < 0.42
 }
 
@@ -244,16 +292,35 @@ async function injectScamImage(token: number) {
   await sleep(220)
   if (token !== deliveryToken.value) return
 
+  const available = SCAM_IMAGE_POOL.filter((x) => !shownScamImageKinds.value.has(x.kind))
+  if (available.length === 0) return
+  const picked = available[Math.floor(Math.random() * available.length)]
+
   await pushVisibleBubble({
     role: 'scammer',
     text: '',
-    imageUrl: INTERNAL_TICKET_IMAGE_URL
+    imageUrl: picked.url
   }, token)
   chatHistory.value.push({
     role: 'scammer',
-    text: '（骗子发送了一张“内部专享票”图片，诱导私聊锁票）'
+    text: picked.narrative
   })
+  shownScamImageKinds.value.add(picked.kind)
   imageScamCount.value += 1
+}
+
+async function injectFinalScammerVoice(token: number) {
+  if (token !== deliveryToken.value) return
+  await pushVisibleBubble(
+    {
+      role: 'scammer',
+      text: '',
+      voiceDurationSec: 60,
+      unread: true
+    },
+    token
+  )
+  chatHistory.value.push({ role: 'scammer', text: '（骗子发送了一条60秒语音，情绪失控输出）' })
 }
 
 async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPackResult>) {
@@ -302,7 +369,26 @@ async function retryCurrentRound() {
 
 async function endOrNextRound(prefetchedPack?: RoundPackResult | Promise<RoundPackResult>) {
   if (round.value >= 5) {
-    const report = await generateFinalReport(chatHistory.value)
+    const reportPromise = generateFinalReport(chatHistory.value)
+    const token = deliveryToken.value
+    if (funnyRoundCount.value >= 4) {
+      await injectFinalScammerVoice(token)
+      await sleep(900)
+    } else {
+      try {
+        const finalReply = await generateFinalScammerReply(chatHistory.value)
+        await pushWithTyping('scammer', finalReply, token)
+        chatHistory.value.push({ role: 'scammer', text: finalReply })
+        await sleep(900)
+      } catch {
+        const fallbackReply = '行，这单我先撤。'
+        await pushWithTyping('scammer', fallbackReply, token)
+        chatHistory.value.push({ role: 'scammer', text: fallbackReply })
+        await sleep(900)
+      }
+    }
+
+    const report = await reportPromise
     finalReport.value = report
     chatHistory.value.push({ role: 'scammer', text: report.scammerSummary })
     stage.value = 'final'
@@ -335,6 +421,7 @@ async function pickOption(optionId: string) {
     await pushWithTyping('user', selected.text, token)
     chatHistory.value.push({ role: 'user', text: selected.text })
     if (selected.category === 'funny') {
+      funnyRoundCount.value += 1
       lastJudge.value = '本轮判定：戏耍中立，积分不变'
     } else if (optionId === currentCorrectOptionId.value) {
       score.value += 10
@@ -379,6 +466,8 @@ async function restartGame() {
   loadError.value = ''
   rawAiError.value = ''
   imageScamCount.value = 0
+  shownScamImageKinds.value = new Set()
+  funnyRoundCount.value = 0
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
   showChoicePanel.value = false
   startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)
@@ -386,6 +475,7 @@ async function restartGame() {
 }
 
 onMounted(() => {
+  preloadScamImages()
   restartGame()
 })
 </script>
