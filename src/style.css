@@ -14,10 +14,51 @@
 }
 
 @layer components {
+  .phone-stage {
+    @apply mx-auto bg-white rounded-2xl border border-slate-200 shadow-xl p-4;
+    width: min(100vw - 16px, 420px);
+    height: min(calc(100vw * 16 / 9), calc(100vh - 16px));
+    max-height: 92vh;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .phone-stage h1 {
+    font-size: 1.75rem;
+    line-height: 1.15;
+  }
+
+  .phone-stage h2 {
+    font-size: 1.4rem;
+    line-height: 1.2;
+  }
+
+  .phone-stage h3 {
+    font-size: 1.1rem;
+    line-height: 1.25;
+  }
+
+  .phone-stage h4 {
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+
+  .phone-stage p,
+  .phone-stage li,
+  .phone-stage button,
+  .phone-stage input,
+  .phone-stage textarea,
+  .phone-stage select,
+  .phone-stage span {
+    font-size: 0.88rem;
+  }
+
   .comic-stage {
     @apply py-2 grid gap-3 items-end;
     grid-template-columns: 92px minmax(0, 1fr) 92px;
-    min-height: 58vh;
+    min-height: 0;
+    height: 100%;
   }
 
   .comic-dialogue-stage {
@@ -51,11 +92,35 @@
   }
   
   .choice-button {
-    @apply w-full p-4 text-left bg-white border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all;
+    @apply w-full p-2.5 text-left bg-white border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all;
   }
   
   .choice-button:hover {
     @apply transform translate-y-[-2px] shadow-md;
+  }
+
+  .choice-panel-enter-active,
+  .choice-panel-leave-active {
+    transition: all 0.24s ease;
+  }
+
+  .choice-panel-enter-from,
+  .choice-panel-leave-to {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  .overlay-choice-panel {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    padding: 10px;
+  }
+
+  .overlay-choice-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .comic-bubble {
@@ -127,9 +192,56 @@
   }
 
   @media (max-width: 768px) {
+    .phone-stage {
+      width: calc(100vw - 12px);
+      height: min(calc(100vw * 16 / 9), calc(100vh - 12px));
+      max-height: calc(100vh - 12px);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .phone-stage h1 {
+      font-size: 1.5rem;
+    }
+
+    .phone-stage h2 {
+      font-size: 1.25rem;
+    }
+
+    .phone-stage h3 {
+      font-size: 1rem;
+    }
+
+    .phone-stage h4 {
+      font-size: 0.9rem;
+    }
+
+    .phone-stage p,
+    .phone-stage li,
+    .phone-stage button,
+    .phone-stage input,
+    .phone-stage textarea,
+    .phone-stage select,
+    .phone-stage span {
+      font-size: 0.84rem;
+    }
+
     .comic-stage {
       grid-template-columns: minmax(0, 1fr);
-      min-height: auto;
+      min-height: 0;
+    }
+
+    .game-card {
+      padding: 12px;
+    }
+
+    .overlay-choice-panel {
+      padding: 10px;
+    }
+
+    .overlay-choice-options {
+      gap: 5px;
     }
 
     .comic-bubble {

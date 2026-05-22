@@ -1,10 +1,5 @@
 <template>
   <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6">
-    <div class="game-card">
-      <h2 class="text-2xl font-bold text-gray-800">分享海报</h2>
-      <p class="mt-2 text-sm text-gray-500">纯H5版本，可截图分享至小红书</p>
-    </div>
-
     <div id="poster-card" class="rounded-2xl p-6 bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 text-white shadow-xl">
       <p class="text-sm opacity-90">好薯坏薯・票务反诈局</p>
       <h3 class="mt-3 text-3xl font-bold">骗子{{ snapshot.finalReport.result }}</h3>
@@ -19,14 +14,9 @@
     </div>
 
     <div class="game-card">
-      <h4 class="font-semibold text-gray-800 mb-2">分享文案</h4>
-      <textarea
-        readonly
-        :value="shareText"
-        class="w-full h-28 border border-gray-300 rounded p-3 text-sm text-gray-700"
-      />
-      <div class="mt-3 flex flex-col sm:flex-row gap-3">
+      <div class="flex flex-col sm:flex-row gap-3">
         <button class="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" @click="copyShareText">复制文案</button>
+        <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="openSafeShuProfile">关注安全薯</button>
         <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="backResult">返回结算页</button>
         <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="backLobby">返回大厅</button>
       </div>
@@ -46,6 +36,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { loadGameResultSnapshot } from '@/services/gameSessionStore'
+import { openSafeShuProfile } from '@/services/safeShuLink'
 
 const router = useRouter()
 const snapshot = computed(() => loadGameResultSnapshot())

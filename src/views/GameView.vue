@@ -1,25 +1,40 @@
 <template>
-  <div class="max-w-4xl mx-auto space-y-6">
-    <div class="game-card">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <h2 class="text-2xl font-bold text-gray-800">你 vs 神秘网友</h2>
-        <div class="flex gap-4 text-sm">
-          <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded">第 {{ round }}/5 轮</span>
-          <span class="px-3 py-1 bg-green-50 text-green-700 rounded">积分 {{ score }}</span>
+  <div class="h-full flex flex-col gap-3 relative">
+    <template v-if="stage === 'playing'">
+      <div class="absolute inset-x-0 bottom-0 z-30 px-1 pb-1">
+        <div v-if="loadError" class="game-card text-center text-red-700">
+          {{ loadError }}
+          <pre v-if="rawAiError" class="mt-3 p-3 text-left text-xs bg-red-50 border border-red-200 rounded whitespace-pre-wrap break-words">{{ rawAiError }}</pre>
+          <div class="mt-3">
+            <button @click="retryCurrentRound" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">重试本轮</button>
+          </div>
         </div>
-      </div>
-      <p v-if="currentTheme" class="mt-2 text-sm text-gray-500">本轮情节：{{ currentTheme.name }}</p>
-      <p v-if="roundSource" class="mt-1 text-xs text-gray-500">本轮来源：{{ roundSource }}</p>
-      <p v-if="sessionRagUsed" class="mt-1 text-xs text-amber-700">本局标记：已触发检索兜底</p>
-      <p v-if="lastJudge" class="mt-3 text-sm text-gray-600">{{ lastJudge }}</p>
-    </div>
 
-    <div class="comic-stage">
+        <Transition name="choice-panel">
+          <div v-if="showChoicePanel && !loadError" class="game-card overlay-choice-panel">
+            <h4 class="font-semibold text-gray-800 mb-2 text-sm">选择回复</h4>
+            <div class="overlay-choice-options">
+              <button
+                v-for="item in currentOptions"
+                :key="item.id"
+                class="choice-button"
+                :disabled="replying || loading || delivering"
+                @click="pickOption(item.id)"
+              >
+                <span class="font-medium mr-2">{{ item.id }}.</span>{{ item.text }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </template>
+
+    <div class="comic-stage flex-1 min-h-0 pt-1 pb-24 relative -top-[200px]">
       <div class="comic-portrait comic-portrait-left">
         <div class="comic-figure">神秘网友立绘位</div>
       </div>
       <div class="comic-dialogue-stage">
-        <div class="space-y-3 px-3 pb-6 pt-1">
+        <div class="h-full space-y-3 px-3 pb-2 pt-1 overflow-hidden">
           <div
             v-for="(item, idx) in visibleHistory"
             :key="idx"
@@ -35,32 +50,7 @@
       </div>
     </div>
 
-    <div v-if="stage === 'playing'" class="space-y-6">
-      <div v-if="loadError" class="game-card text-center text-red-700">
-        {{ loadError }}
-        <pre v-if="rawAiError" class="mt-3 p-3 text-left text-xs bg-red-50 border border-red-200 rounded whitespace-pre-wrap break-words">{{ rawAiError }}</pre>
-        <div class="mt-3">
-          <button @click="retryCurrentRound" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">重试本轮</button>
-        </div>
-      </div>
-
-      <div v-else class="game-card">
-        <h4 class="font-semibold text-gray-800 mb-3">选择回复话术</h4>
-        <div class="space-y-2">
-          <button
-            v-for="item in currentOptions"
-            :key="item.id"
-            class="choice-button"
-            :disabled="replying || loading || delivering"
-            @click="pickOption(item.id)"
-          >
-            <span class="font-medium mr-2">{{ item.id }}.</span>{{ item.text }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-else class="game-card border-blue-200 bg-blue-50 text-blue-900">
+    <div v-if="stage !== 'playing'" class="game-card border-blue-200 bg-blue-50 text-blue-900">
       对局已结束，正在跳转结算页...
     </div>
   </div>
@@ -108,6 +98,7 @@ const sessionRagUsed = ref(false)
 const loadError = ref('')
 const rawAiError = ref('')
 const typingIndicatorText = '神秘网友正在输入...'
+const showChoicePanel = ref(false)
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -197,6 +188,7 @@ async function deliverScammerMessages(messages: string[], token: number) {
 
 async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPackResult>) {
   loading.value = true
+  showChoicePanel.value = false
   const token = deliveryToken.value
   await eraseVisibleHistory(token)
   await ensureTypingIndicator(token)
@@ -213,6 +205,7 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
     await deliverScammerMessages(pack.scammerMessages, token)
     currentOptions.value = pack.options
     currentCorrectOptionId.value = pack.correctOptionId
+    showChoicePanel.value = true
   } catch (error) {
     clearTypingIndicator()
     roundSource.value = '前端兜底'
@@ -262,6 +255,7 @@ async function pickOption(optionId: string) {
   const selected = currentOptions.value.find((x) => x.id === optionId)
   if (!selected) return
 
+  showChoicePanel.value = false
   replying.value = true
   try {
     const token = deliveryToken.value
@@ -312,6 +306,7 @@ async function restartGame() {
   loadError.value = ''
   rawAiError.value = ''
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+  showChoicePanel.value = false
   startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)
   await loadRoundPack()
 }

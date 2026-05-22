@@ -20,6 +20,7 @@
 
     <div class="flex flex-col sm:flex-row gap-3">
       <button class="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" @click="goPoster">生成分享海报</button>
+      <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="openSafeShuProfile">关注安全薯</button>
       <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="playAgain">再来一局</button>
       <button class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50" @click="backLobby">返回大厅</button>
     </div>
@@ -37,6 +38,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { loadGameResultSnapshot } from '@/services/gameSessionStore'
+import { openSafeShuProfile } from '@/services/safeShuLink'
 
 const router = useRouter()
 const snapshot = computed(() => loadGameResultSnapshot())
