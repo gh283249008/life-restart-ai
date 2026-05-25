@@ -21,9 +21,9 @@
             class="intro-confirm intro-segment"
             :class="{ 'is-visible': introReady }"
             @click="confirmIntroAndStart"
-            :disabled="startingFromIntro || !introReady"
+            :disabled="startingFromIntro || !introReady || prefetchState === 'pending'"
           >
-          {{ startingFromIntro ? '加载中...' : '我知道了，开始鉴别' }}
+          {{ startingFromIntro ? '加载中...' : prefetchState === 'pending' ? '预加载中...' : '我知道了，开始鉴别' }}
           </button>
         </div>
       </div>
@@ -102,9 +102,6 @@
       </div>
     </div>
 
-    <div v-if="stage !== 'playing'" class="game-card border-blue-200 bg-blue-50 text-blue-900">
-      对局已结束，正在跳转结算页...
-    </div>
   </div>
 </template>
 
@@ -115,6 +112,7 @@ import {
   generateFinalReport,
   generateFinalScammerReply,
   generateRoundPack,
+  resetRoundDiversitySession,
   RoundGenerationError,
   SCENARIO_THEMES,
   type ScenarioTheme,
@@ -183,6 +181,7 @@ const funnyRoundCount = ref(0)
 const showIntroModal = ref(true)
 const startingFromIntro = ref(false)
 const firstRoundPrefetch = ref<Promise<RoundPackResult> | null>(null)
+const prefetchState = ref<'pending' | 'ready' | 'failed'>('pending')
 const introStage = ref(0)
 const introReady = ref(false)
 let visibleUid = 0
@@ -305,19 +304,23 @@ async function eraseVisibleHistory(token: number) {
   }
 }
 
-async function deliverScammerMessages(messages: string[], token: number) {
+async function deliverScammerMessages(messages: string[], token: number, firstMessageFast = false) {
   delivering.value = true
   try {
     let lastText = ''
+    let idx = 0
     for (const message of messages) {
       if (token !== deliveryToken.value) return
-      await sleep(320 + Math.floor(Math.random() * 460))
+      if (!(firstMessageFast && idx === 0)) {
+        await sleep(320 + Math.floor(Math.random() * 460))
+      }
       if (token !== deliveryToken.value) return
       const text = String(message).trim()
       if (!text || text === lastText) continue
       await pushWithTyping('scammer', text, token)
       chatHistory.value.push({ role: 'scammer', text })
       lastText = text
+      idx += 1
     }
   } finally {
     if (token === deliveryToken.value) {
@@ -374,27 +377,29 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
   showChoicePanel.value = false
   const token = deliveryToken.value
   await eraseVisibleHistory(token)
-  await ensureTypingIndicator(token)
+  const isPrefetchedObject = !!prefetchedPack && typeof prefetchedPack === 'object' && !('then' in (prefetchedPack as object))
+  const fastFirstRound = round.value === 1 && isPrefetchedObject
+  if (!fastFirstRound) {
+    await ensureTypingIndicator(token)
+  }
   try {
     if (!currentTheme.value) {
       currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
     }
-    const livePackPromise = generateRoundPack(chatHistory.value, round.value, currentTheme.value)
-    const pack = prefetchedPack
-      ? await Promise.race([
-          Promise.resolve(prefetchedPack),
-          (async () => {
-            await sleep(1800)
-            return await livePackPromise
-          })()
-        ]).catch(async () => await livePackPromise)
-      : await livePackPromise
+    let pack: RoundPackResult
+    if (prefetchedPack) {
+      pack = await Promise.resolve(prefetchedPack)
+    } else {
+      pack = await generateRoundPack(chatHistory.value, round.value, currentTheme.value)
+    }
     roundSource.value = pack.source === 'ai' ? 'AI生成' : '检索兜底'
     if (pack.source === 'rag') sessionRagUsed.value = true
     loadError.value = ''
     rawAiError.value = pack.source === 'rag' ? (pack.rawContent || '[无原始正文]') : ''
-    await eraseTypingIndicator(token)
-    await deliverScammerMessages(pack.scammerMessages, token)
+    if (!fastFirstRound) {
+      await eraseTypingIndicator(token)
+    }
+    await deliverScammerMessages(pack.scammerMessages, token, fastFirstRound)
     if (shouldInjectScamImage()) {
       await injectScamImage(token)
     }
@@ -422,21 +427,38 @@ function prefetchFirstRound() {
   if (!currentTheme.value) {
     currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
   }
-  firstRoundPrefetch.value = generateRoundPack(chatHistory.value, 1, currentTheme.value).catch((err) => {
-    firstRoundPrefetch.value = null
-    throw err
-  })
+  prefetchState.value = 'pending'
+  firstRoundPrefetch.value = generateRoundPack(chatHistory.value, 1, currentTheme.value)
+    .then((pack) => {
+      prefetchState.value = 'ready'
+      return pack
+    })
+    .catch((err) => {
+      prefetchState.value = 'failed'
+      firstRoundPrefetch.value = null
+      throw err
+    })
 }
 
 async function confirmIntroAndStart() {
   if (startingFromIntro.value) return
+  if (prefetchState.value === 'pending') return
   startingFromIntro.value = true
   showIntroModal.value = false
   try {
-    await loadRoundPack(firstRoundPrefetch.value || undefined)
+    let readyPack: RoundPackResult | undefined
+    if (firstRoundPrefetch.value) {
+      try {
+        readyPack = await firstRoundPrefetch.value
+      } catch {
+        readyPack = undefined
+      }
+    }
+    await loadRoundPack(readyPack || undefined)
   } finally {
     startingFromIntro.value = false
     firstRoundPrefetch.value = null
+    prefetchState.value = 'ready'
   }
 }
 
@@ -446,6 +468,7 @@ async function retryCurrentRound() {
 
 async function endOrNextRound(prefetchedPack?: RoundPackResult | Promise<RoundPackResult>) {
   if (round.value >= 5) {
+    stage.value = 'final'
     const reportPromise = generateFinalReport(chatHistory.value)
     const token = deliveryToken.value
     if (funnyRoundCount.value >= 4) {
@@ -465,10 +488,25 @@ async function endOrNextRound(prefetchedPack?: RoundPackResult | Promise<RoundPa
       }
     }
 
-    const report = await reportPromise
+    let report: FinalReport
+    try {
+      report = await reportPromise
+    } catch {
+      report = {
+        result: score.value >= 20 ? '认输了' : '得逞了',
+        scammerSummary:
+          score.value >= 20
+            ? '你这波全程走官方流程，坏窝瓜这单彻底没戏。'
+            : '先别慌，这局有风险暴露点，下一局按平台验真就能稳住。',
+        tips: [
+          '任何“先转账后验票”都属于高风险信号。',
+          '验证码、身份证、银行卡信息都不要发给陌生人。',
+          '只在官方平台完成交易和验真，必要时立即举报。'
+        ]
+      }
+    }
     finalReport.value = report
     chatHistory.value.push({ role: 'scammer', text: report.scammerSummary })
-    stage.value = 'final'
     finishSession(sessionId.value, score.value, report.result)
     saveGameResultSnapshot({
       sessionId: sessionId.value,
@@ -527,6 +565,7 @@ async function restartGame() {
   deliveryToken.value += 1
   clearGameResultSnapshot()
   resetRetrieveSession()
+  resetRoundDiversitySession()
   sessionId.value = `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   round.value = 1
   score.value = 0
@@ -548,6 +587,7 @@ async function restartGame() {
   showIntroModal.value = true
   startingFromIntro.value = false
   firstRoundPrefetch.value = null
+  prefetchState.value = 'pending'
   introStage.value = 0
   introReady.value = false
   currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]

@@ -120,6 +120,33 @@ const fallbackOptionPool: Record<'correct' | 'wrong' | 'funny', string[]> = {
   ]
 }
 
+const fallbackScammerMessagePool: Record<string, string[]> = {
+  default: [
+    '现在票真的紧张，你不下手很快就没了。',
+    '我这边流程很快，你先按我说的走就行。',
+    '你再犹豫就被别人拍走了，名额只留一会儿。',
+    '我这边可以先帮你锁单，你先确认要不要。'
+  ],
+  sports_event: [
+    '这场临开赛票很抢手，你现在不定就没了。',
+    '连坐位只剩最后两张，我先给你锁着。',
+    '很多人都在问这场，你这边尽快定。',
+    '平台票慢，我这边内部通道出得更快。'
+  ],
+  fake_platform: [
+    '我把入口发你，按页面提示提交就能出票。',
+    '这个页面和官方流程一致，你直接照着填。',
+    '你先在这边验证一下，过了我就放票。',
+    '订单我先给你占着，你现在点进去确认。'
+  ],
+  refund_scam: [
+    '退款通道现在排队，你先按我这边快速处理。',
+    '客服这边催得急，你先把流程走完我再给你回执。',
+    '系统快截止了，你这边现在操作最稳。',
+    '我先帮你挂退款单，你按步骤处理就行。'
+  ]
+}
+
 function sanitizeUnsafeText(text: string): string {
   let safe = String(text)
   safe = safe.replace(/\b\d{12,19}\b/g, '[银行卡号]')
@@ -264,20 +291,22 @@ function makeOptionDiversityGuard(
 
     const diversified = pack.options.map((opt, idx) => {
       const original = String(opt.text || '').trim()
-      const duplicateInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, original) >= 0.82)
-      const similarToHistory = historyTexts.some((x) => similarityByCharSet(x, original) >= 0.86)
+      const duplicateInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, original) >= 0.9)
+      const similarToHistory = historyTexts.some((x) => similarityByCharSet(x, original) >= 0.92)
+      const similarToRecentOptions = recentOptionTexts.some((x) => similarityByCharSet(x, original) >= 0.95)
       const stale = containsStalePattern(original)
 
       let text = original
-      if (stale || duplicateInRound || similarToHistory) {
+      if (stale || duplicateInRound || similarToHistory || similarToRecentOptions) {
         const pool = fallbackOptionPool[opt.category]
         const start = (round + idx) % pool.length
         let picked = pool[start]
         for (let i = 0; i < pool.length; i += 1) {
           const candidate = pool[(start + i) % pool.length]
-          const badInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, candidate) >= 0.82)
-          const badInHistory = historyTexts.some((x) => similarityByCharSet(x, candidate) >= 0.86)
-          if (!badInRound && !badInHistory) {
+          const badInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, candidate) >= 0.9)
+          const badInHistory = historyTexts.some((x) => similarityByCharSet(x, candidate) >= 0.92)
+          const badInRecent = recentOptionTexts.some((x) => similarityByCharSet(x, candidate) >= 0.95)
+          if (!badInRound && !badInHistory && !badInRecent) {
             picked = candidate
             break
           }
@@ -290,6 +319,56 @@ function makeOptionDiversityGuard(
     })
 
     return { ...pack, options: diversified }
+  }
+}
+
+function makeScammerMessageDiversityGuard(
+  history: Array<{ role: 'user' | 'scammer'; text: string }>,
+  round: number,
+  theme: ScenarioTheme
+) {
+  const historyScammerTexts = history
+    .filter((x) => x.role === 'scammer')
+    .map((x) => String(x.text || '').trim())
+    .filter(Boolean)
+
+  const pool = fallbackScammerMessagePool[theme.id] || fallbackScammerMessagePool.default
+
+  return (pack: RoundPack): RoundPack => {
+    const usedInRound = new Set<string>()
+    let replacedCount = 0
+
+    const diversifiedMessages = pack.scammerMessages.map((msg, idx) => {
+      const original = String(msg || '').trim()
+      const duplicateInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, original) >= 0.92)
+      const similarToHistory = historyScammerTexts.some((x) => similarityByCharSet(x, original) >= 0.93)
+
+      let text = original
+      const shouldReplace = round >= 3 && (duplicateInRound || similarToHistory) && replacedCount < 1
+      if (shouldReplace) {
+        const start = (round + idx) % pool.length
+        let picked = pool[start]
+        for (let i = 0; i < pool.length; i += 1) {
+          const candidate = pool[(start + i) % pool.length]
+          const badInRound = Array.from(usedInRound).some((x) => similarityByCharSet(x, candidate) >= 0.92)
+          const badInHistory = historyScammerTexts.some((x) => similarityByCharSet(x, candidate) >= 0.93)
+          if (!badInRound && !badInHistory) {
+            picked = candidate
+            break
+          }
+        }
+        text = picked
+        replacedCount += 1
+      }
+
+      usedInRound.add(text)
+      return text
+    })
+
+    return {
+      ...pack,
+      scammerMessages: diversifiedMessages
+    }
   }
 }
 
@@ -317,10 +396,26 @@ const MAX_RETRIES = 2
 const RETRY_DELAYS_MS = [300, 800, 1500]
 const BREAKER_FAIL_THRESHOLD = 6
 const BREAKER_COOLDOWN_MS = 8000
+const RECENT_OPTION_MEMORY_LIMIT = 24
 
 let failureCount = 0
 let breakerUntil = 0
 const inflight = new Map<string, Promise<string>>()
+const recentOptionTexts: string[] = []
+
+export function resetRoundDiversitySession() {
+  recentOptionTexts.length = 0
+}
+
+function rememberRecentOptions(options: ScenarioOption[]) {
+  for (const opt of options) {
+    const text = String(opt.text || '').trim()
+    if (text) recentOptionTexts.push(text)
+  }
+  while (recentOptionTexts.length > RECENT_OPTION_MEMORY_LIMIT) {
+    recentOptionTexts.shift()
+  }
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -348,7 +443,7 @@ function isCircuitOpen() {
 
 async function callLLM(
   messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
-  maxTokens = 420,
+  maxTokens = 6000,
   bypassCircuit = false,
   extraRetries = 0
 ) {
@@ -371,18 +466,12 @@ async function callLLM(
       const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
 
       try {
-        const systemParts = messages.filter((m) => m.role === 'system').map((m) => m.content)
-        const mergedInstructions = [
-          LLM_CONFIG.noThinking ? 'No thinking mode. Output final answer directly.' : '',
-          ...systemParts
-        ]
-          .filter(Boolean)
-          .join('\n\n')
-        const nonSystemParts = messages
-          .filter((m) => m.role !== 'system')
-          .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+        const requestMessages = messages.map((m) => ({
+          role: m.role,
+          content: m.content
+        }))
 
-        const response = await fetch(`${LLM_CONFIG.baseUrl}/responses`, {
+        const response = await fetch(`${LLM_CONFIG.baseUrl}/chat/completions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -390,12 +479,11 @@ async function callLLM(
           },
           body: JSON.stringify({
             model: LLM_CONFIG.model,
-            instructions: mergedInstructions || 'You are a helpful assistant.',
-            input: nonSystemParts.join('\n\n') || '你好',
+            messages: requestMessages,
             stream: false,
-            thinking: LLM_CONFIG.noThinking ? false : undefined,
+            thinking: { type: 'disabled' },
             temperature: 0.5,
-            max_output_tokens: maxTokens
+            max_tokens: maxTokens
           }),
           signal: controller.signal,
           keepalive: true
@@ -420,15 +508,7 @@ async function callLLM(
         }
 
         const data = await response.json()
-        const outputText = data?.output_text
-        const outputArrayText = Array.isArray(data?.output)
-          ? data.output
-              .flatMap((item: { content?: Array<{ text?: string }> }) => item?.content || [])
-              .map((c: { text?: string }) => c?.text || '')
-              .join('\n')
-          : ''
-        const compatChoiceText = data?.choices?.[0]?.message?.content
-        const content = outputText || outputArrayText || compatChoiceText
+        const content = data?.choices?.[0]?.message?.content
         if (!content) {
           const err = new Error('AI 返回为空') as Error & { reason?: string }
           err.reason = 'empty_content'
@@ -477,6 +557,14 @@ export async function generateRoundPack(
   theme: ScenarioTheme
 ): Promise<RoundPackResult> {
   const diversifyOptions = makeOptionDiversityGuard(history, round)
+  const diversifyScammerMessages = makeScammerMessageDiversityGuard(history, round, theme)
+  const postProcessPack = (rawPack: RoundPack): RoundPack => {
+    let pack = normalizeRoundPack(rawPack)
+    pack = enforceRoundPackSafety(pack)
+    pack = diversifyScammerMessages(pack)
+    pack = diversifyOptions(pack)
+    return pack
+  }
   const buildPromptMessages = () => [
     {
       role: 'system' as const,
@@ -500,7 +588,7 @@ export async function generateRoundPack(
 }
 规则：
 1) scammerMessages 输出 1-3 条，每条 8-28 字，必须口语化，像即时聊天。
-2) 同一轮内骗子消息不能语义复读；必须参考历史对话推进情节。
+2) 同一轮内骗子消息不能语义复读；必须紧接历史对话推进情节，不能突然换话题。
 3) options 必须 4 条且不重复：1个correct、2个wrong、1个funny；四条在语义意图上必须明显不同。
 4) options 全部是玩家视角回复话术。correct体现反诈动作（不脱离平台、不转账、不泄露隐私、要求平台验真）；wrong有迷惑性；funny可整活。
 5) 对话中不要出现任何真实姓名；仅在必须使用称呼时可用“坏窝瓜”作为骗子代称，但禁止高频重复自称“坏窝瓜”。
@@ -511,14 +599,19 @@ export async function generateRoundPack(
 10) 对话将用于左右角色漫画分镜，台词要有戏剧张力与角色感。
 11) 禁止复用高频模板句。像“抢得到算我输”“不行你报警吧”“你先转再说”这类整句在单局内最多出现一次，后续必须换表达。
 12) wrong 的两个选项必须采用不同诱导策略（如“先付定金型”与“情绪施压型”），不能只换个别字。
-13) funny 选项每轮都要有新梗，禁止与历史 funny 选项高相似复述（避免仅替换 1-2 个词）。`
+13) funny 选项每轮都要有新梗，禁止与历史 funny 选项高相似复述（避免仅替换 1-2 个词）。
+14) 五轮必须构成完整连续对话：第N轮必须回应第N-1轮玩家态度（质疑/拖延/戏耍/拒绝）。
+15) 骗子策略要有递进：试探 -> 催促 -> 施压 -> 补诱饵/改口 -> 收尾表态，不能每轮都像重开新对话。
+16) 每轮至少引用一个上轮信息点（如“你刚才说平台验真”“你一直不转账”），增强承接感。
+17) 如果玩家连续坚持官方流程，骗子语气应逐轮从热情转急躁；如果玩家连续戏耍，骗子应逐轮更破防。
+18) 严禁“场景重置句式”，例如“我这边有票你要吗”在第3轮后再次作为开场主句。`
     }
   ]
 
   let content = ''
   const isFirstRound = round === 1
   try {
-    content = await callLLM(buildPromptMessages(), 3000, isFirstRound, isFirstRound ? 1 : 0)
+    content = await callLLM(buildPromptMessages(), 6000, isFirstRound, isFirstRound ? 1 : 0)
   } catch (error) {
     const reqRaw = (error as { rawContent?: string })?.rawContent || ''
     const reqStatus = (error as { status?: number })?.status
@@ -526,7 +619,7 @@ export async function generateRoundPack(
     // 首轮强制优先 AI，不直接进入 RAG
     if (isFirstRound) {
       try {
-        content = await callLLM(buildPromptMessages(), 3000, true, 2)
+        content = await callLLM(buildPromptMessages(), 6000, true, 2)
       } catch {
         // fall through to degrade chain
       }
@@ -537,7 +630,11 @@ export async function generateRoundPack(
     } else {
       // 仅在请求层失败时使用 RAG
       const recalled = retrieveRoundPack(history, round, theme)
-      if (recalled) return { ...recalled, source: 'rag', rawContent: reqRaw || '[无原始正文：请求阶段失败]' }
+      if (recalled) {
+        const safe = postProcessPack(recalled)
+        rememberRecentOptions(safe.options)
+        return { ...safe, source: 'rag', rawContent: reqRaw || '[无原始正文：请求阶段失败]' }
+      }
       throw new RoundGenerationError(
         `AI请求失败且无可用检索结果（reason=${reqReason}${reqStatus ? `, status=${reqStatus}` : ''}）`,
         'request',
@@ -569,16 +666,15 @@ export async function generateRoundPack(
           parsed = JSON.parse(extractJson(repaired)) as RoundPack
         }
 
-        parsed = normalizeRoundPack(parsed)
-        parsed = enforceRoundPackSafety(parsed)
-        parsed = diversifyOptions(parsed)
+        parsed = postProcessPack(parsed)
+        rememberRecentOptions(parsed.options)
         rememberRoundPack(history, round, theme, parsed)
         return { ...parsed, source: 'ai' }
       } catch (e) {
         lastErr = e
         if (attempt < 2) {
           // 若发现截断，优先提高 tokens 重试，避免半截 JSON
-          const nextTokens = 3000
+          const nextTokens = 6000
           content = await callLLM(buildPromptMessages(), nextTokens, true, 1)
         }
       }
@@ -596,7 +692,7 @@ export async function generateRoundPack(
           role: 'user',
           content: `请重新生成第${round}轮回合JSON，要求：1个correct、2个wrong、1个funny；消息1-3条且不重复；不含隐私泄露样例。`
         }
-      ], 3000)
+      ], 6000)
 
       const repaired = JSON.parse(extractJson(regen)) as RoundPack
       if (
@@ -606,9 +702,8 @@ export async function generateRoundPack(
         repaired.scammerMessages.length >= 1
       ) {
         repaired.scammerMessages = [...new Set(repaired.scammerMessages.slice(0, 3).map((x) => String(x).slice(0, 40)))]
-        let safe = enforceRoundPackSafety(repaired)
-        safe = normalizeRoundPack(safe)
-        safe = diversifyOptions(safe)
+        const safe = postProcessPack(repaired)
+        rememberRecentOptions(safe.options)
         rememberRoundPack(history, round, theme, safe)
         return { ...safe, source: 'ai' }
       }
@@ -616,7 +711,11 @@ export async function generateRoundPack(
       // ignore and continue degrade
     }
     const recalled = retrieveRoundPack(history, round, theme)
-    if (recalled) return { ...recalled, source: 'rag', rawContent: content || '[无原始正文：校验阶段失败]' }
+    if (recalled) {
+      const safe = postProcessPack(recalled)
+      rememberRecentOptions(safe.options)
+      return { ...safe, source: 'rag', rawContent: content || '[无原始正文：校验阶段失败]' }
+    }
     throw new RoundGenerationError('AI校验失败且无可用检索结果（reason=parse_or_validate）', 'parse_or_validate', content, 'unknown')
   }
 }
@@ -656,15 +755,21 @@ export async function generateFinalReport(
   const content = await callLLM([
     {
       role: 'system',
-      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出最终一句总结和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。'
+      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出有小红书网感的结算总结和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。'
     },
     {
       role: 'user',
       content: `历史对话：${history.map((x) => `${x.role === 'user' ? '我' : '神秘网友'}:${x.text}`).join(' | ')}
+语气规则：
+1) 总结语必须是 1-2 句，年轻口语、有网感、有情绪，不要干巴巴。
+2) 如果结果偏向“认输了”，且玩家坚持走官方/验真/不转账，语气要鼓励与点赞。
+3) 如果玩家多次戏耍骗子（整局明显在整活），语气要夸奖机智与反诈意识。
+4) 如果结果偏向“得逞了”或出现被骗风险，语气要安慰，强调可补救动作，避免指责。
+5) 禁止脏话、羞辱、冷嘲热讽；不要出现真实姓名或隐私信息。
 输出：
 {
   "result":"得逞了|认输了",
-  "scammerSummary":"骗子最后一句总结台词，得逞了或认输了",
+  "scammerSummary":"结算总结文案（1-2句，小红书网感，按结果匹配鼓励/夸奖/安慰语气）",
   "tips":["科普1","科普2","科普3"]
 }`
     }
