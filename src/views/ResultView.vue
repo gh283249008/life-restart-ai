@@ -1,18 +1,18 @@
 <template>
   <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6">
     <div class="game-card border-blue-200 bg-blue-50">
-      <h2 class="text-2xl font-bold text-blue-900">结算：骗子{{ snapshot.finalReport.result }}</h2>
+      <h2 class="text-2xl text-blue-900">结算：骗子{{ snapshot.finalReport.result }}</h2>
       <p class="mt-2 text-sm text-blue-800">最终积分：{{ snapshot.score }}</p>
       <p v-if="snapshot.theme" class="mt-1 text-xs text-blue-700">对局情节：{{ snapshot.theme.name }}</p>
     </div>
 
     <div class="game-card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">骗子总结</h3>
+      <h3 class="text-lg text-gray-800 mb-2">骗子总结</h3>
       <p class="text-gray-700">{{ snapshot.finalReport.scammerSummary }}</p>
     </div>
 
     <div class="game-card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">反诈科普</h3>
+      <h3 class="text-lg text-gray-800 mb-2">反诈科普</h3>
       <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
         <li v-for="(tip, idx) in snapshot.finalReport.tips" :key="idx">{{ tip }}</li>
       </ul>

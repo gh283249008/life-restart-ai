@@ -5,8 +5,8 @@
         <h3 class="intro-title intro-segment" :class="{ 'is-visible': introStage >= 1 }">开局说明</h3>
         <p class="intro-lead intro-segment" :class="{ 'is-visible': introStage >= 2 }">邪恶的坏窝瓜总爱伪装成票务卖家，专门套取隐私和转账。你将化身反诈小侦探，在 5 轮交锋里识破它的计谋。</p>
         <div class="intro-steps">
-          <p class="intro-segment" :class="{ 'is-visible': introStage >= 3 }"><strong>玩法：</strong>每轮 4 个选项，尽量选择不转账、不泄露隐私、要求平台验真的回复。</p>
-          <p class="intro-segment" :class="{ 'is-visible': introStage >= 4 }"><strong>计分：</strong>选中正确反诈动作 +10，风险选择 -5，整活为中立。</p>
+          <p class="intro-segment" :class="{ 'is-visible': introStage >= 3 }">玩法：每轮 4 个选项，尽量选择不转账、不泄露隐私、要求平台验真的回复。</p>
+          <p class="intro-segment" :class="{ 'is-visible': introStage >= 4 }">计分：选中正确反诈动作 +10，风险选择 -5，整活为中立。</p>
         </div>
         <div class="intro-tips intro-segment" :class="{ 'is-visible': introStage >= 5 }">
           <p class="intro-tips-title">反诈小贴士</p>
@@ -41,16 +41,16 @@
 
         <Transition name="choice-panel">
           <div v-if="showChoicePanel && !loadError" class="game-card overlay-choice-panel">
-            <h4 class="font-semibold text-gray-800 mb-2 text-sm">选择回复</h4>
+            <h4 class="text-gray-800 mb-2 text-sm">选择回复</h4>
             <div class="overlay-choice-options">
               <button
                 v-for="item in currentOptions"
-                :key="item.id"
+                :key="`${round}-${item.id}-${item.text}`"
                 class="choice-button"
                 :disabled="replying || loading || delivering"
                 @click="pickOption(item.id)"
               >
-                <span class="font-medium mr-2">{{ item.id }}.</span>{{ item.text }}
+                <span class="mr-2">{{ item.id }}.</span>{{ item.text }}
               </button>
             </div>
           </div>
@@ -63,6 +63,9 @@
         <div class="comic-figure">神秘网友立绘位</div>
       </div>
       <div class="comic-dialogue-stage">
+        <div v-if="loading && round === 1 && visibleHistory.length === 0" class="first-round-waiting">
+          坏窝瓜正在想坏点子……
+        </div>
         <div class="h-full space-y-3 px-3 pb-2 pt-1 overflow-hidden">
           <div
             v-for="item in visibleHistory"
@@ -193,6 +196,18 @@ function preloadScamImages() {
   }
 }
 
+async function waitForFontsReady(timeoutMs = 2500) {
+  if (typeof document === 'undefined' || !(document as Document & { fonts?: FontFaceSet }).fonts) return
+  const fonts = (document as Document & { fonts?: FontFaceSet }).fonts
+  if (!fonts) return
+  await Promise.race([
+    fonts.ready,
+    (async () => {
+      await sleep(timeoutMs)
+    })()
+  ])
+}
+
 async function playIntroReveal() {
   introStage.value = 0
   introReady.value = false
@@ -200,7 +215,7 @@ async function playIntroReveal() {
   for (let i = 1; i <= totalStages; i += 1) {
     if (!showIntroModal.value) return
     introStage.value = i
-    await sleep(360)
+    await sleep(540)
   }
   introReady.value = true
 }
@@ -379,7 +394,8 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
   await eraseVisibleHistory(token)
   const isPrefetchedObject = !!prefetchedPack && typeof prefetchedPack === 'object' && !('then' in (prefetchedPack as object))
   const fastFirstRound = round.value === 1 && isPrefetchedObject
-  if (!fastFirstRound) {
+  const skipTypingIndicator = round.value === 1
+  if (!skipTypingIndicator) {
     await ensureTypingIndicator(token)
   }
   try {
@@ -396,7 +412,7 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
     if (pack.source === 'rag') sessionRagUsed.value = true
     loadError.value = ''
     rawAiError.value = pack.source === 'rag' ? (pack.rawContent || '[无原始正文]') : ''
-    if (!fastFirstRound) {
+    if (!skipTypingIndicator) {
       await eraseTypingIndicator(token)
     }
     await deliverScammerMessages(pack.scammerMessages, token, fastFirstRound)
@@ -594,6 +610,7 @@ async function restartGame() {
   showChoicePanel.value = false
   startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)
   prefetchFirstRound()
+  await waitForFontsReady()
   void playIntroReveal()
 }
 

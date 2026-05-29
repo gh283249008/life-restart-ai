@@ -1,13 +1,13 @@
 <template>
   <div class="max-w-4xl mx-auto space-y-6">
     <div class="game-card">
-      <h2 class="text-2xl font-bold text-gray-800">统计后台</h2>
+      <h2 class="text-2xl text-gray-800">统计后台</h2>
       <p class="text-sm text-gray-500 mt-2">按日期查看对局与选择分布</p>
     </div>
 
     <div class="game-card">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">今日统计</h3>
+        <h3 class="text-lg text-gray-800">今日统计</h3>
         <select
           v-model="selectedDate"
           class="p-2 border border-gray-300 rounded-md text-sm"
@@ -19,27 +19,27 @@
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="text-center p-4 bg-blue-50 rounded-lg">
-          <div class="text-2xl font-bold text-blue-700">{{ current.totalSessions }}</div>
+          <div class="text-2xl text-blue-700">{{ current.totalSessions }}</div>
           <div class="text-sm text-gray-600">对局数</div>
         </div>
         <div class="text-center p-4 bg-blue-50 rounded-lg">
-          <div class="text-2xl font-bold text-blue-700">{{ current.totalRounds }}</div>
+          <div class="text-2xl text-blue-700">{{ current.totalRounds }}</div>
           <div class="text-sm text-gray-600">总回合数</div>
         </div>
         <div class="text-center p-4 bg-blue-50 rounded-lg">
-          <div class="text-2xl font-bold text-blue-700">{{ current.avgScore }}</div>
+          <div class="text-2xl text-blue-700">{{ current.avgScore }}</div>
           <div class="text-sm text-gray-600">平均积分</div>
         </div>
         <div class="text-center p-4 bg-blue-50 rounded-lg">
-          <div class="text-2xl font-bold text-blue-700">{{ current.totalRounds > 0 ? correctRate : '0' }}%</div>
+          <div class="text-2xl text-blue-700">{{ current.totalRounds > 0 ? correctRate : '0' }}%</div>
           <div class="text-sm text-gray-600">正确率</div>
         </div>
       </div>
 
-      <h4 class="text-md font-semibold text-gray-800 mb-3">选项分布</h4>
+      <h4 class="text-md text-gray-800 mb-3">选项分布</h4>
       <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <span class="text-sm text-green-700 font-medium">正确选项</span>
+          <span class="text-sm text-green-700">正确选项</span>
           <div class="flex-1 mx-4">
             <div class="w-full bg-gray-200 rounded-full h-4">
               <div class="bg-green-500 h-4 rounded-full" :style="{ width: correctRate + '%' }"></div>
@@ -49,7 +49,7 @@
         </div>
 
         <div class="flex items-center justify-between">
-          <span class="text-sm text-red-700 font-medium">错误选项</span>
+          <span class="text-sm text-red-700">错误选项</span>
           <div class="flex-1 mx-4">
             <div class="w-full bg-gray-200 rounded-full h-4">
               <div class="bg-red-500 h-4 rounded-full" :style="{ width: wrongRate + '%' }"></div>
@@ -59,7 +59,7 @@
         </div>
 
         <div class="flex items-center justify-between">
-          <span class="text-sm text-purple-700 font-medium">整活选项</span>
+          <span class="text-sm text-purple-700">整活选项</span>
           <div class="flex-1 mx-4">
             <div class="w-full bg-gray-200 rounded-full h-4">
               <div class="bg-purple-500 h-4 rounded-full" :style="{ width: funnyRate + '%' }"></div>
@@ -69,7 +69,7 @@
         </div>
 
         <div class="flex items-center justify-between">
-          <span class="text-sm text-amber-700 font-medium">自定义回复</span>
+          <span class="text-sm text-amber-700">自定义回复</span>
           <div class="flex-1 mx-4">
             <div class="w-full bg-gray-200 rounded-full h-4">
               <div class="bg-amber-500 h-4 rounded-full" :style="{ width: customRate + '%' }"></div>
@@ -79,7 +79,7 @@
         </div>
 
         <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-500 font-medium">跳过</span>
+          <span class="text-sm text-gray-500">跳过</span>
           <div class="flex-1 mx-4">
             <div class="w-full bg-gray-200 rounded-full h-4">
               <div class="bg-gray-400 h-4 rounded-full" :style="{ width: skipRate + '%' }"></div>
@@ -91,21 +91,21 @@
     </div>
 
     <div class="game-card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">骗子胜负</h3>
+      <h3 class="text-lg text-gray-800 mb-4">骗子胜负</h3>
       <div class="grid grid-cols-2 gap-4">
         <div class="text-center p-4 bg-red-50 rounded-lg border border-red-200">
-          <div class="text-2xl font-bold text-red-700">{{ current.scammerWonCount }}</div>
+          <div class="text-2xl text-red-700">{{ current.scammerWonCount }}</div>
           <div class="text-sm text-gray-600">骗子得逞</div>
         </div>
         <div class="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-          <div class="text-2xl font-bold text-green-700">{{ current.scammerLostCount }}</div>
+          <div class="text-2xl text-green-700">{{ current.scammerLostCount }}</div>
           <div class="text-sm text-gray-600">骗子认输</div>
         </div>
       </div>
     </div>
 
     <div class="game-card">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">近 7 天趋势</h3>
+      <h3 class="text-lg text-gray-800 mb-4">近 7 天趋势</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>

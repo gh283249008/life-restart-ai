@@ -5,7 +5,7 @@
 @font-face {
   font-family: 'FZLTKH-GBK-Var';
   src: url('/fonts/fzltkh-gbk.ttf') format('truetype');
-  font-weight: 100 900;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -18,6 +18,7 @@
   
   body {
     @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen;
+    font-weight: 400;
   }
 }
 
@@ -100,13 +101,10 @@
   }
   
   .choice-button {
-    @apply w-full p-2.5 text-left bg-white border-2 border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-all;
+    @apply w-full p-2.5 text-left bg-white border-2 border-gray-200 rounded-lg transition-all;
     -webkit-tap-highlight-color: transparent;
     outline: none;
-  }
-  
-  .choice-button:hover {
-    @apply transform translate-y-[-2px] shadow-md;
+    font-weight: 400;
   }
 
   .choice-button:focus,
@@ -147,6 +145,7 @@
 
   .comic-bubble {
     @apply relative max-w-[85%] px-4 py-3 text-sm leading-6;
+    font-weight: 400;
     border-radius: 14px;
     border: 2px solid #0f172a;
     box-shadow: 3px 3px 0 #0f172a;
@@ -307,7 +306,7 @@
 
   .voice-duration {
     font-size: 19px;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1;
   }
 
@@ -338,7 +337,7 @@
     border-radius: 999px;
     padding: 0 12px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1;
     border: 1px solid rgba(0, 0, 0, 0.05);
     background: #ffffff;
@@ -374,7 +373,7 @@
 
   .intro-title {
     font-size: 1.05rem;
-    font-weight: 700;
+    font-weight: 400;
     color: #0f172a;
     margin-bottom: 6px;
   }
@@ -382,6 +381,7 @@
   .intro-lead {
     font-size: 0.88rem;
     line-height: 1.55;
+    font-weight: 400;
     color: #334155;
     margin-bottom: 8px;
   }
@@ -389,8 +389,13 @@
   .intro-steps p {
     font-size: 0.84rem;
     line-height: 1.55;
+    font-weight: 400;
     color: #334155;
     margin-bottom: 5px;
+  }
+
+  .intro-steps strong {
+    font-weight: 400;
   }
 
   .intro-tips {
@@ -403,7 +408,7 @@
 
   .intro-tips-title {
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 400;
     color: #0f172a;
     margin-bottom: 4px;
   }
@@ -416,6 +421,7 @@
   .intro-tips li {
     font-size: 0.8rem;
     line-height: 1.5;
+    font-weight: 400;
     color: #475569;
     margin-bottom: 2px;
   }
@@ -429,7 +435,7 @@
     background: #0ea5e9;
     color: #ffffff;
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 400;
     transition: transform 0.15s ease, filter 0.15s ease;
   }
 
@@ -445,7 +451,7 @@
   .intro-segment {
     opacity: 0;
     transform: translateY(4px);
-    transition: opacity 0.56s ease, transform 0.56s ease;
+    transition: opacity 1.12s ease, transform 1.12s ease;
   }
 
   .intro-segment.is-visible {
@@ -457,6 +463,23 @@
     margin-top: auto;
     min-height: 38px;
     padding-top: 10px;
+  }
+
+  .first-round-waiting {
+    margin: 8px 10px 4px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px dashed #cbd5e1;
+    background: rgba(255, 255, 255, 0.72);
+    color: #475569;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    font-weight: 400;
+  }
+
+  .comic-dialogue-stage,
+  .comic-dialogue-stage * {
+    font-weight: 400;
   }
 
   @keyframes intro-fade-in {

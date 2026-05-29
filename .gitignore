@@ -11,3 +11,4 @@ auto-*.d.ts
 .history
 package-lock.json
 pnpm-lock.yaml
+tsconfig.tsbuildinfo

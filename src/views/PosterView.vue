@@ -2,11 +2,11 @@
   <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6">
     <div id="poster-card" class="rounded-2xl p-6 bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 text-white shadow-xl">
       <p class="text-sm opacity-90">好薯坏薯・票务反诈局</p>
-      <h3 class="mt-3 text-3xl font-bold">骗子{{ snapshot.finalReport.result }}</h3>
+      <h3 class="mt-3 text-3xl">骗子{{ snapshot.finalReport.result }}</h3>
       <p class="mt-2 text-lg">我的积分：{{ snapshot.score }}</p>
       <p class="mt-4 text-sm leading-6 bg-white/15 rounded-lg p-3">{{ snapshot.finalReport.scammerSummary }}</p>
       <div class="mt-4 bg-white/10 rounded-lg p-3">
-        <h4 class="font-semibold mb-2">反诈三招</h4>
+        <h4 class="mb-2">反诈三招</h4>
         <ul class="list-disc pl-5 text-sm space-y-1">
           <li v-for="(tip, idx) in snapshot.finalReport.tips" :key="idx">{{ tip }}</li>
         </ul>

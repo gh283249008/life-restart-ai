@@ -23,5 +23,4 @@
 - 构建与样式模块：`/workspace/.monkeycode/docs/模块/构建与样式模块.md`
 
 ## 现状说明
-- 仓库根目录存在历史文档 `PURE-AI-EVENT-SYSTEM.md`、`doubao_migration_checklist.md`，描述的是旧版“人生重开/豆包迁移”背景。
 - 当前 `src/` 代码已聚焦“票务反诈对话游戏”，建议以后续维护以本目录文档为准。
