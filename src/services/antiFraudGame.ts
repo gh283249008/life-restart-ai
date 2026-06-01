@@ -474,8 +474,7 @@ async function callLLM(
         const response = await fetch(`${LLM_CONFIG.baseUrl}/chat/completions`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${LLM_CONFIG.apiKey}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             model: LLM_CONFIG.model,

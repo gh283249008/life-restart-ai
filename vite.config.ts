@@ -16,20 +16,19 @@ export default defineConfig({
     cors: true,
     allowedHosts: ['.monkeycode-ai.online'],
     proxy: {
-      '/hunyuan/v1': {
-        target: 'https://tokenhub.tencentmaas.com',
+      '/api/llm': {
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/hunyuan\/v1/, '/v1'),
+        secure: false,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            console.log('hunyuan proxy error', err);
+            console.log('llm proxy error', err);
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('Sending Request to Hunyuan:', req.method, req.url);
+            console.log('Sending Request to local llm server:', req.method, req.url);
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from Hunyuan:', proxyRes.statusCode, req.url);
+            console.log('Received Response from local llm server:', proxyRes.statusCode, req.url);
           });
         },
       },

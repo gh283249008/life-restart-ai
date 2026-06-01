@@ -16,16 +16,23 @@
       </div>
 
     <div class="mt-auto pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-      <router-link
-        to="/game"
-        class="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+      <button
+        type="button"
+        :disabled="!hasFollowedSafeShu"
+        :class="[
+          'px-8 py-3 text-white rounded-lg transition-colors',
+          hasFollowedSafeShu
+            ? 'bg-primary-600 hover:bg-primary-700'
+            : 'bg-slate-300 cursor-not-allowed'
+        ]"
+        @click="startGame"
       >
         开始鉴别
-      </router-link>
+      </button>
       <button
         type="button"
         class="px-8 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-        @click="openSafeShuProfile"
+        @click="handleFollowSafeShu"
       >
         关注安全薯
       </button>
@@ -34,5 +41,23 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { openSafeShuProfile } from '@/services/safeShuLink'
+
+const SAFE_SHU_FOLLOWED_KEY = 'safe_shu_followed'
+
+const router = useRouter()
+const hasFollowedSafeShu = ref(localStorage.getItem(SAFE_SHU_FOLLOWED_KEY) === '1')
+
+function handleFollowSafeShu() {
+  openSafeShuProfile()
+  hasFollowedSafeShu.value = true
+  localStorage.setItem(SAFE_SHU_FOLLOWED_KEY, '1')
+}
+
+function startGame() {
+  if (!hasFollowedSafeShu.value) return
+  router.push('/game')
+}
 </script>
