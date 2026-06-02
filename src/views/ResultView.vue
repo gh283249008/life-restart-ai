@@ -1,5 +1,5 @@
 <template>
-  <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6">
+  <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6 pt-10">
     <div class="game-card border-blue-200 bg-blue-50">
       <h2 class="text-2xl text-blue-900">结算：骗子{{ snapshot.finalReport.result }}</h2>
       <p class="mt-2 text-sm text-blue-800">最终积分：{{ snapshot.score }}</p>
@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <div v-else class="max-w-3xl mx-auto">
+  <div v-else class="max-w-3xl mx-auto pt-10">
     <div class="game-card text-center">
       <p class="text-gray-700">没有可用结算数据，请先完成一局游戏。</p>
       <button class="mt-4 px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" @click="backLobby">前往大厅</button>

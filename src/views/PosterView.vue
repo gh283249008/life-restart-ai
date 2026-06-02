@@ -1,5 +1,5 @@
 <template>
-  <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6">
+  <div v-if="snapshot" class="max-w-4xl mx-auto space-y-6 pt-10">
     <div id="poster-card" class="rounded-2xl p-6 bg-gradient-to-br from-blue-600 via-cyan-500 to-teal-500 text-white shadow-xl">
       <p class="text-sm opacity-90">好薯坏薯・票务反诈局</p>
       <h3 class="mt-3 text-3xl">骗子{{ snapshot.finalReport.result }}</h3>
@@ -24,7 +24,7 @@
     </div>
   </div>
 
-  <div v-else class="max-w-3xl mx-auto">
+  <div v-else class="max-w-3xl mx-auto pt-10">
     <div class="game-card text-center">
       <p class="text-gray-700">没有可用结算数据，请先完成一局游戏。</p>
       <button class="mt-4 px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" @click="backLobby">前往大厅</button>

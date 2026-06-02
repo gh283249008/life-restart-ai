@@ -1,5 +1,5 @@
 <template>
-  <div class="text-center h-full flex flex-col">
+  <div class="text-center h-full flex flex-col pt-10">
     <div class="mb-4">
       <h1 class="text-3xl text-gray-800 mb-2">好薯坏薯・票务反诈局</h1>
       <p class="text-base text-gray-600 mb-1">社交鉴别小游戏</p>

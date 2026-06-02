@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 import App from './App.vue'
 import './style.css'
+import { initBgm } from './services/bgm'
 
 // 路由配置
 import HomeView from './views/HomeView.vue'
@@ -24,4 +25,5 @@ const router = createRouter({
 const app = createApp(App)
 app.use(router)
 
+initBgm()
 app.mount('#app')

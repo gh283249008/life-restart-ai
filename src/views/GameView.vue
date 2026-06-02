@@ -1,30 +1,47 @@
 <template>
-  <div class="h-full flex flex-col gap-3 relative">
+  <div class="h-full flex flex-col gap-3 relative pt-10">
     <div v-if="showIntroModal" class="intro-mask">
-      <div class="intro-modal game-card">
-        <h3 class="intro-title intro-segment" :class="{ 'is-visible': introStage >= 1 }">开局说明</h3>
-        <p class="intro-lead intro-segment" :class="{ 'is-visible': introStage >= 2 }">邪恶的坏窝瓜总爱伪装成票务卖家，专门套取隐私和转账。你将化身反诈小侦探，在 5 轮交锋里识破它的计谋。</p>
-        <div class="intro-steps">
-          <p class="intro-segment" :class="{ 'is-visible': introStage >= 3 }">玩法：每轮 4 个选项，尽量选择不转账、不泄露隐私、要求平台验真的回复。</p>
-          <p class="intro-segment" :class="{ 'is-visible': introStage >= 4 }">计分：选中正确反诈动作 +10，风险选择 -5，整活为中立。</p>
-        </div>
-        <div class="intro-tips intro-segment" :class="{ 'is-visible': introStage >= 5 }">
-          <p class="intro-tips-title">反诈小贴士</p>
-          <ul>
-            <li class="intro-segment" :class="{ 'is-visible': introStage >= 6 }">任何“先转账后验票”都高风险。</li>
-            <li class="intro-segment" :class="{ 'is-visible': introStage >= 7 }">验证码、身份证、银行卡信息都不能给陌生人。</li>
-            <li class="intro-segment" :class="{ 'is-visible': introStage >= 8 }">只走官方平台交易与验真流程。</li>
-          </ul>
-        </div>
-        <div class="intro-confirm-slot">
-          <button
-            class="intro-confirm intro-segment"
-            :class="{ 'is-visible': introReady }"
-            @click="confirmIntroAndStart"
-            :disabled="startingFromIntro || !introReady || prefetchState === 'pending'"
-          >
-          {{ startingFromIntro ? '加载中...' : prefetchState === 'pending' ? '预加载中...' : '我知道了，开始鉴别' }}
-          </button>
+      <div class="intro-modal" :style="introModalStyle">
+        <img
+          class="intro-copy-image intro-segment"
+          :class="{ 'is-visible': introStage >= 1 }"
+          :src="introCopyImage"
+          alt="开局说明文案"
+        >
+        <img
+          class="intro-copy-image intro-segment"
+          :class="{ 'is-visible': introStage >= 2 }"
+          :src="introRuleImage"
+          alt="玩法说明文案"
+        >
+        <img
+          class="intro-copy-image intro-segment"
+          :class="{ 'is-visible': introStage >= 3 }"
+          :src="introScoreImage"
+          alt="记分说明文案"
+        >
+        <img
+          class="intro-copy-image intro-segment"
+          :class="{ 'is-visible': introStage >= 4 }"
+          :src="introTipsImage"
+          alt="小贴士说明文案"
+        >
+        <div class="intro-modal-content">
+          <div class="intro-confirm-slot">
+            <button
+              class="intro-confirm intro-segment"
+              :class="{ 'is-visible': introReady }"
+              @click="confirmIntroAndStart"
+              :disabled="startingFromIntro || !introReady || prefetchState === 'pending'"
+              :aria-label="introButtonLabel"
+            >
+              <img
+                class="intro-confirm-image"
+                :src="introButtonImage"
+                :alt="introButtonLabel"
+              >
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -109,8 +126,15 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import introModalBackground from '../../.monkeycode-tmp-files/bde8039f-底图-改-1.png'
+import introCopyImage from '../../.monkeycode-tmp-files/c293db87-未标题、-1.svg'
+import introRuleImage from '../../.monkeycode-tmp-files/07da2bf2-玩法(2)-1.svg'
+import introScoreImage from '../../.monkeycode-tmp-files/5d1ec481-记分-1.svg'
+import introTipsImage from '../../.monkeycode-tmp-files/eded9ce0-小贴士(1)-2.svg'
+import introButtonPendingImage from '../../.monkeycode-tmp-files/7bf2b27d-微信图片_20260602132054_1218_393-1.png'
+import introButtonReadyImage from '../../.monkeycode-tmp-files/28b89bf9-微信图片_20260602131542_1217_393-2.png'
 import {
   generateFinalReport,
   generateFinalScammerReply,
@@ -189,6 +213,22 @@ const introStage = ref(0)
 const introReady = ref(false)
 let visibleUid = 0
 
+const introModalStyle = {
+  backgroundImage: `url(${introModalBackground})`
+}
+
+const introButtonLabel = computed(() => (
+  startingFromIntro.value || prefetchState.value === 'pending'
+    ? '预加载中'
+    : '我知道了，开始鉴别'
+))
+
+const introButtonImage = computed(() => (
+  startingFromIntro.value || prefetchState.value === 'pending'
+    ? introButtonPendingImage
+    : introButtonReadyImage
+))
+
 function preloadScamImages() {
   for (const item of SCAM_IMAGE_POOL) {
     const img = new Image()
@@ -211,11 +251,11 @@ async function waitForFontsReady(timeoutMs = 2500) {
 async function playIntroReveal() {
   introStage.value = 0
   introReady.value = false
-  const totalStages = 8
+  const totalStages = 4
   for (let i = 1; i <= totalStages; i += 1) {
     if (!showIntroModal.value) return
     introStage.value = i
-    await sleep(540)
+    await sleep(810)
   }
   introReady.value = true
 }
