@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 
 const BGM_ENABLED_KEY = 'bgm_enabled'
-const BGM_SRC = '/BGM_loop.wav'
+const BGM_SRC = '/.monkeycode-tmp-files/6e43e86b-BGM_loop-1.ogg'
 
 const isEnabled = ref(localStorage.getItem(BGM_ENABLED_KEY) !== '0')
 

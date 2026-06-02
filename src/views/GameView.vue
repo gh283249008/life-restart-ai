@@ -1,5 +1,131 @@
 <template>
-  <div class="h-full flex flex-col gap-3 relative pt-10">
+  <div class="game-screen h-full flex flex-col gap-3 relative pt-10" :style="gameScreenStyle">
+    <div class="game-screen-content">
+      <template v-if="stage === 'playing'">
+        <div v-if="loadError" class="absolute inset-x-0 bottom-0 z-30 text-center text-red-700 overflow-visible">
+            {{ loadError }}
+            <pre v-if="rawAiError" class="mt-3 p-3 text-left text-xs bg-red-50 border border-red-200 rounded whitespace-pre-wrap break-words">{{ rawAiError }}</pre>
+            <div class="mt-3">
+              <button @click="retryCurrentRound" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">重试本轮</button>
+            </div>
+        </div>
+
+        <Transition name="choice-panel">
+          <div
+            v-if="showChoicePanel && !loadError"
+            class="absolute z-30 overlay-choice-panel-content"
+            :style="choicePanelBoardStyle"
+          >
+            <div class="overlay-choice-panel-body">
+              <h4 class="text-gray-800 mb-2 text-sm">选择回复</h4>
+              <div class="overlay-choice-options">
+                <button
+                  v-for="item in currentOptions"
+                  :key="`${round}-${item.id}-${item.text}`"
+                  class="choice-button"
+                  :disabled="replying || loading || delivering"
+                  @click="pickOption(item.id)"
+                >
+                  <span class="mr-2">{{ item.id }}.</span>{{ item.text }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </template>
+
+      <div class="comic-stage flex-1 min-h-0 pt-1 pb-24 relative -top-[300px]">
+        <img class="comic-avatar comic-avatar-scammer" :src="scammerAvatarImage" alt="坏窝瓜头像">
+        <div class="comic-dialogue-layout">
+          <div v-if="loading && round === 1 && visibleHistory.length === 0" class="first-round-waiting">
+            坏窝瓜正在想坏点子……
+          </div>
+          <div class="comic-dialogue-debug-layer" aria-hidden="true">
+            <div class="comic-dialogue-zone comic-dialogue-zone-scammer">
+              <span class="comic-dialogue-zone-label">坏蛋对话区</span>
+            </div>
+            <div class="comic-dialogue-zone comic-dialogue-zone-player">
+              <span class="comic-dialogue-zone-label">玩家对话区</span>
+            </div>
+          </div>
+          <div class="comic-dialogue-live-layer">
+            <div class="comic-dialogue-slot comic-dialogue-slot-scammer">
+              <template v-if="scammerVisibleBubble">
+                <div class="comic-dialogue-entry" :class="scammerVisibleBubble.leaving ? 'bubble-leaving' : ''">
+                  <template v-if="scammerVisibleBubble.voiceDurationSec">
+                    <div class="voice-wrap voice-wrap-scammer">
+                      <div class="comic-bubble comic-bubble-scammer">
+                        <div class="voice-row voice-row-scammer">
+                          <div class="voice-bubble voice-bubble-scammer">
+                            <span class="voice-icon" aria-hidden="true"></span>
+                            <span class="voice-gap" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span class="voice-duration">{{ scammerVisibleBubble.voiceDurationSec }}s</span>
+                          </div>
+                          <span v-if="scammerVisibleBubble.unread" class="voice-unread-dot" aria-label="未读"></span>
+                        </div>
+                      </div>
+                      <span class="voice-transcribe voice-transcribe-outside">转文字</span>
+                    </div>
+                  </template>
+                  <div v-else-if="scammerVisibleBubble.imageUrl" class="comic-image-card comic-image-card-scammer">
+                    <img :src="scammerVisibleBubble.imageUrl" alt="内部专享票" :class="['scam-image', scammerVisibleBubble.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
+                    <p v-if="scammerVisibleBubble.text" class="mt-2">{{ scammerVisibleBubble.text }}</p>
+                  </div>
+                  <div v-else class="comic-bubble comic-bubble-scammer" :class="{ 'comic-bubble-typing': scammerVisibleBubble.typing }">
+                    <svg class="comic-bubble-shape comic-bubble-shape-scammer" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true">
+                      <path class="comic-bubble-shape-fill" d="M46 30 C64 14, 110 10, 166 14 C224 18, 266 24, 288 40 C302 52, 308 72, 304 96 C300 124, 284 142, 252 150 C214 160, 178 164, 138 164 C114 170, 96 182, 74 196 C82 182, 88 170, 96 156 C66 150, 44 140, 30 124 C18 108, 14 80, 20 54 C24 40, 32 34, 46 30 Z" />
+                      <path class="comic-bubble-shape-stroke" d="M46 30 C64 14, 110 10, 166 14 C224 18, 266 24, 288 40 C302 52, 308 72, 304 96 C300 124, 284 142, 252 150 C214 160, 178 164, 138 164 C114 170, 96 182, 74 196 C82 182, 88 170, 96 156 C66 150, 44 140, 30 124 C18 108, 14 80, 20 54 C24 40, 32 34, 46 30 Z" />
+                    </svg>
+                    <div class="comic-bubble-content">{{ scammerVisibleBubble.text }}</div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <div class="comic-dialogue-slot comic-dialogue-slot-user">
+              <template v-if="userVisibleBubble">
+                <div class="comic-dialogue-entry" :class="userVisibleBubble.leaving ? 'bubble-leaving' : ''">
+                  <template v-if="userVisibleBubble.voiceDurationSec">
+                    <div class="voice-wrap voice-wrap-scammer">
+                      <div class="comic-bubble comic-bubble-user">
+                        <div class="voice-row voice-row-scammer">
+                          <div class="voice-bubble voice-bubble-scammer">
+                            <span class="voice-icon" aria-hidden="true"></span>
+                            <span class="voice-gap" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span class="voice-duration">{{ userVisibleBubble.voiceDurationSec }}s</span>
+                          </div>
+                          <span v-if="userVisibleBubble.unread" class="voice-unread-dot" aria-label="未读"></span>
+                        </div>
+                      </div>
+                      <span class="voice-transcribe voice-transcribe-outside">转文字</span>
+                    </div>
+                  </template>
+                  <div v-else-if="userVisibleBubble.imageUrl" class="comic-image-card comic-image-card-user">
+                    <img :src="userVisibleBubble.imageUrl" alt="内部专享票" :class="['scam-image', userVisibleBubble.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
+                    <p v-if="userVisibleBubble.text" class="mt-2">{{ userVisibleBubble.text }}</p>
+                  </div>
+                  <div v-else class="comic-bubble comic-bubble-user" :class="{ 'comic-bubble-typing': userVisibleBubble.typing }">
+                    <svg class="comic-bubble-shape comic-bubble-shape-user" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true">
+                      <path class="comic-bubble-shape-fill" d="M26 38 C44 20, 80 14, 128 16 C176 18, 214 20, 248 28 C278 36, 296 52, 302 78 C306 98, 302 120, 292 136 C280 150, 266 158, 248 164 C258 174, 270 188, 284 204 C254 190, 230 178, 204 166 C166 170, 128 170, 86 166 C58 160, 36 148, 24 132 C12 112, 10 80, 16 58 C18 50, 22 42, 26 38 Z" />
+                      <path class="comic-bubble-shape-stroke" d="M26 38 C44 20, 80 14, 128 16 C176 18, 214 20, 248 28 C278 36, 296 52, 302 78 C306 98, 302 120, 292 136 C280 150, 266 158, 248 164 C258 174, 270 188, 284 204 C254 190, 230 178, 204 166 C166 170, 128 170, 86 166 C58 160, 36 148, 24 132 C12 112, 10 80, 16 58 C18 50, 22 42, 26 38 Z" />
+                    </svg>
+                    <div class="comic-bubble-content">{{ userVisibleBubble.text }}</div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+        <img class="comic-avatar comic-avatar-player" :src="playerAvatarImage" alt="玩家头像">
+      </div>
+    </div>
+
+    <div
+      class="game-screen-overlay"
+      :style="gameScreenOverlayStyle"
+      aria-hidden="true"
+    ></div>
+
     <div v-if="showIntroModal" class="intro-mask">
       <div class="intro-modal" :style="introModalStyle">
         <img
@@ -45,83 +171,6 @@
         </div>
       </div>
     </div>
-
-    <template v-if="stage === 'playing'">
-      <div class="absolute inset-x-0 bottom-0 z-30 px-1 pb-1">
-        <div v-if="loadError" class="game-card text-center text-red-700">
-          {{ loadError }}
-          <pre v-if="rawAiError" class="mt-3 p-3 text-left text-xs bg-red-50 border border-red-200 rounded whitespace-pre-wrap break-words">{{ rawAiError }}</pre>
-          <div class="mt-3">
-            <button @click="retryCurrentRound" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">重试本轮</button>
-          </div>
-        </div>
-
-        <Transition name="choice-panel">
-          <div v-if="showChoicePanel && !loadError" class="game-card overlay-choice-panel">
-            <h4 class="text-gray-800 mb-2 text-sm">选择回复</h4>
-            <div class="overlay-choice-options">
-              <button
-                v-for="item in currentOptions"
-                :key="`${round}-${item.id}-${item.text}`"
-                class="choice-button"
-                :disabled="replying || loading || delivering"
-                @click="pickOption(item.id)"
-              >
-                <span class="mr-2">{{ item.id }}.</span>{{ item.text }}
-              </button>
-            </div>
-          </div>
-        </Transition>
-      </div>
-    </template>
-
-    <div class="comic-stage flex-1 min-h-0 pt-1 pb-24 relative -top-[200px]">
-      <div class="comic-portrait comic-portrait-left">
-        <div class="comic-figure">神秘网友立绘位</div>
-      </div>
-      <div class="comic-dialogue-stage">
-        <div v-if="loading && round === 1 && visibleHistory.length === 0" class="first-round-waiting">
-          坏窝瓜正在想坏点子……
-        </div>
-        <div class="h-full space-y-3 px-3 pb-2 pt-1 overflow-hidden">
-          <div
-            v-for="item in visibleHistory"
-            :key="item.uid"
-            class="flex items-end"
-            :class="[item.role === 'user' ? 'justify-end' : 'justify-start', item.leaving ? 'bubble-leaving' : '']"
-          >
-            <template v-if="item.voiceDurationSec">
-              <div class="voice-wrap voice-wrap-scammer">
-                <div class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">
-                  <div class="voice-row voice-row-scammer">
-                    <div class="voice-bubble voice-bubble-scammer">
-                      <span class="voice-icon" aria-hidden="true"></span>
-                      <span class="voice-gap" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                      <span class="voice-duration">{{ item.voiceDurationSec }}s</span>
-                    </div>
-                    <span v-if="item.unread" class="voice-unread-dot" aria-label="未读"></span>
-                  </div>
-                </div>
-                <span class="voice-transcribe voice-transcribe-outside">转文字</span>
-              </div>
-            </template>
-            <div v-else class="comic-bubble" :class="item.role === 'user' ? 'comic-bubble-user' : 'comic-bubble-scammer'">
-              <template v-if="item.imageUrl">
-                <img :src="item.imageUrl" alt="内部专享票" :class="['scam-image', item.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
-                <p v-if="item.text" class="mt-2">{{ item.text }}</p>
-              </template>
-              <template v-else>
-                {{ item.text }}
-              </template>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="comic-portrait comic-portrait-right">
-        <div class="comic-figure">玩家立绘位</div>
-      </div>
-    </div>
-
   </div>
 </template>
 
@@ -129,6 +178,11 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import introModalBackground from '../../.monkeycode-tmp-files/bde8039f-底图-改-1.png'
+import gamePageBackground from '../../.monkeycode-tmp-files/4ee61b88-底图-07-1.webp'
+import gamePageOverlay from '../../.monkeycode-tmp-files/88f16943-顶-1.svg'
+import choicePanelBoard from '../../.monkeycode-tmp-files/aa862066-未标题-9977181-08-3.webp'
+import playerAvatarImage from '../../.monkeycode-tmp-files/7c5e7595-小人头-1.svg'
+import scammerAvatarImage from '../../.monkeycode-tmp-files/aec773bc-瓜头-2.svg'
 import introCopyImage from '../../.monkeycode-tmp-files/c293db87-未标题、-1.svg'
 import introRuleImage from '../../.monkeycode-tmp-files/07da2bf2-玩法(2)-1.svg'
 import introScoreImage from '../../.monkeycode-tmp-files/5d1ec481-记分-1.svg'
@@ -158,7 +212,7 @@ type ChatMessage = {
   voiceDurationSec?: number
   unread?: boolean
 }
-type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean }
+type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean; typing?: boolean }
 
 const INTERNAL_TICKET_IMAGE_URL = '/images/scam-internal-ticket.jpg'
 const FAKE_PAYMENT_IMAGE_URL = '/images/scam-fake-payment.jpg'
@@ -213,9 +267,29 @@ const introStage = ref(0)
 const introReady = ref(false)
 let visibleUid = 0
 
+const scammerVisibleBubble = computed(() => visibleHistory.value.find((item) => item.role === 'scammer') || null)
+const userVisibleBubble = computed(() => visibleHistory.value.find((item) => item.role === 'user') || null)
+
 const introModalStyle = {
   backgroundImage: `url(${introModalBackground})`
 }
+
+const gameScreenStyle = {
+  backgroundImage: `url(${gamePageBackground})`
+}
+
+const gameScreenOverlayStyle = {
+  backgroundImage: `url(${gamePageOverlay})`,
+  backgroundPosition: 'center calc(100% + 30px)'
+}
+
+const choicePanelBoardStyle = computed(() => ({
+  backgroundImage: `url(${choicePanelBoard})`,
+  backgroundPosition: 'center center',
+  backgroundSize: '100% auto',
+  width: '100%',
+  bottom: '21px'
+}))
 
 const introButtonLabel = computed(() => (
   startingFromIntro.value || prefetchState.value === 'pending'
@@ -269,6 +343,7 @@ async function pushWithTyping(role: 'user' | 'scammer', fullText: string, token:
   if (!text) return
   const bubble = await pushVisibleBubble({ role, text: '' }, token)
   if (!bubble) return
+  bubble.typing = true
 
   for (let i = 0; i < text.length; i += 1) {
     if (token !== deliveryToken.value) return
@@ -278,33 +353,35 @@ async function pushWithTyping(role: 'user' | 'scammer', fullText: string, token:
     await nextTick()
     await sleep(28 + Math.floor(Math.random() * 36))
   }
-}
 
-async function shrinkTopBubble(token: number) {
-  if (visibleHistory.value.length < 2) return
-  const top = visibleHistory.value[0]
-  if (!top) return
-  top.leaving = true
-  await nextTick()
-  await sleep(220)
-  if (token !== deliveryToken.value) return
-  if (visibleHistory.value[0]?.uid === top.uid) {
-    visibleHistory.value.shift()
-  } else {
-    const idx = visibleHistory.value.findIndex((x) => x.uid === top.uid)
-    if (idx >= 0) visibleHistory.value.splice(idx, 1)
+  const finalIndex = visibleHistory.value.findIndex((x) => x.uid === bubble.uid)
+  if (finalIndex !== -1) {
+    visibleHistory.value[finalIndex].typing = false
   }
 }
 
+async function dismissVisibleBubble(uid: number, token: number) {
+  const target = visibleHistory.value.find((item) => item.uid === uid)
+  if (!target) return
+  target.leaving = true
+  await nextTick()
+  await sleep(220)
+  if (token !== deliveryToken.value) return
+  const idx = visibleHistory.value.findIndex((item) => item.uid === uid)
+  if (idx >= 0) visibleHistory.value.splice(idx, 1)
+}
+
 async function pushVisibleBubble(message: ChatMessage, token: number): Promise<VisibleMessage | null> {
-  if (visibleHistory.value.length >= 2) {
-    await shrinkTopBubble(token)
+  const existing = visibleHistory.value.find((item) => item.role === message.role)
+  if (existing) {
+    await dismissVisibleBubble(existing.uid, token)
   }
   if (token !== deliveryToken.value) return null
   const bubble: VisibleMessage = {
     ...message,
     uid: ++visibleUid,
-    leaving: false
+    leaving: false,
+    typing: false
   }
   visibleHistory.value.push(bubble)
   return bubble
@@ -343,19 +420,20 @@ function clearTypingIndicator() {
 }
 
 async function eraseVisibleHistory(token: number) {
-  for (let msgIdx = visibleHistory.value.length - 1; msgIdx >= 0; msgIdx -= 1) {
+  const snapshot = [...visibleHistory.value]
+  for (const current of snapshot) {
     if (token !== deliveryToken.value) return
-    const current = visibleHistory.value[msgIdx]
     const full = current?.text || ''
     for (let i = full.length; i >= 0; i -= 1) {
       if (token !== deliveryToken.value) return
-      if (!visibleHistory.value[msgIdx]) break
-      visibleHistory.value[msgIdx].text = full.slice(0, i)
+      const live = visibleHistory.value.find((item) => item.uid === current.uid)
+      if (!live) break
+      live.text = full.slice(0, i)
       await nextTick()
       await sleep(10)
     }
     if (token !== deliveryToken.value) return
-    visibleHistory.value.splice(msgIdx, 1)
+    await dismissVisibleBubble(current.uid, token)
   }
 }
 

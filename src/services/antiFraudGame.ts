@@ -1,4 +1,5 @@
 import { LLM_CONFIG } from '@/config/llm'
+import { archiveRoundPack } from './ragArchive'
 import { rememberRoundPack, retrieveRoundPack } from './ragStore'
 
 export interface ScenarioOption {
@@ -44,6 +45,17 @@ export interface FinalReport {
   result: '得逞了' | '认输了'
   scammerSummary: string
   tips: string[]
+}
+
+function archiveRoundPackInBackground(
+  history: Array<{ role: 'user' | 'scammer'; text: string }>,
+  round: number,
+  theme: ScenarioTheme,
+  pack: RoundPack
+) {
+  void archiveRoundPack(history, round, theme, pack).catch(() => {
+    // Keep archiving failures outside the gameplay path.
+  })
 }
 
 export async function generateFinalScammerReply(
@@ -668,6 +680,7 @@ export async function generateRoundPack(
         parsed = postProcessPack(parsed)
         rememberRecentOptions(parsed.options)
         rememberRoundPack(history, round, theme, parsed)
+        archiveRoundPackInBackground(history, round, theme, parsed)
         return { ...parsed, source: 'ai' }
       } catch (e) {
         lastErr = e
@@ -704,6 +717,7 @@ export async function generateRoundPack(
         const safe = postProcessPack(repaired)
         rememberRecentOptions(safe.options)
         rememberRoundPack(history, round, theme, safe)
+        archiveRoundPackInBackground(history, round, theme, safe)
         return { ...safe, source: 'ai' }
       }
     } catch {

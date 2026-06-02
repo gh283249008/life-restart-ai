@@ -14,17 +14,27 @@
 @layer base {
   html {
     font-family: 'FZLTKH-GBK-Var', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    margin: 0;
+    padding: 0;
   }
   
   body {
     @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen;
     font-weight: 400;
+    margin: 0;
+    padding: 0;
+  }
+
+  #app {
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
   }
 }
 
 @layer components {
   .phone-stage {
-    @apply mx-auto bg-white rounded-2xl border border-slate-200 shadow-xl p-4;
+    @apply mx-auto rounded-2xl;
     width: min(100vw - 16px, 420px);
     height: min(calc(100vw * 16 / 9), calc(100vh - 16px));
     max-height: 92vh;
@@ -32,6 +42,10 @@
     font-size: 14px;
     line-height: 1.45;
     position: relative;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
   }
 
   .bgm-toggle {
@@ -92,32 +106,193 @@
   }
 
   .comic-stage {
-    @apply py-2 grid gap-3 items-end;
-    grid-template-columns: 92px minmax(0, 1fr) 92px;
+    @apply py-2;
     min-height: 0;
     height: 100%;
+    position: relative;
+  }
+
+  .game-screen {
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .game-screen-content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+  }
+
+  .game-screen-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   .comic-dialogue-stage {
     @apply min-w-0;
   }
 
-  .comic-portrait {
-    @apply hidden md:flex items-end justify-center;
-    min-height: 52vh;
+  .comic-stage {
+    isolation: isolate;
   }
 
-  .comic-figure {
-    @apply w-[76px] h-[220px] border-2 border-dashed rounded-2xl text-[11px] text-gray-500 bg-white/80 flex items-center justify-center text-center px-2;
-    border-color: #94a3b8;
+  .comic-dialogue-layout {
+    position: relative;
+    height: 100%;
+    padding: 0 12px 8px;
   }
 
-  .comic-portrait-left .comic-figure {
-    transform: rotate(-1deg);
+  .comic-dialogue-debug-layer {
+    display: none;
   }
 
-  .comic-portrait-right .comic-figure {
-    transform: rotate(1deg);
+  .comic-dialogue-zone {
+    position: absolute;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8px;
+    border: 2px dashed rgba(15, 23, 42, 0.55);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(1.5px);
+  }
+
+  .comic-dialogue-zone-scammer {
+    left: calc(28% + 30px);
+    top: calc(50.8% + 50px);
+    width: calc(40% + 80px);
+    height: min(38.61vw, 172px);
+    background: rgba(251, 191, 36, 0.18);
+    border-color: rgba(180, 83, 9, 0.85);
+  }
+
+  .comic-dialogue-zone-player {
+    right: calc(28% + 30px);
+    top: calc(73.8% + 70px);
+    width: calc(40% + 80px);
+    height: min(35.1vw, 128px);
+    background: rgba(14, 165, 233, 0.16);
+    border-color: rgba(3, 105, 161, 0.85);
+  }
+
+  .comic-dialogue-zone-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1;
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .comic-dialogue-live-layer {
+    position: relative;
+    z-index: 9;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .comic-dialogue-slot {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    z-index: 9;
+    padding: 2px 4px;
+    overflow: visible;
+  }
+
+  .comic-dialogue-slot-scammer {
+    left: calc(28% + 30px);
+    top: calc(50.8% + 50px);
+    width: calc(40% + 80px);
+    height: min(38.61vw, 172px);
+    justify-content: flex-start;
+  }
+
+  .comic-dialogue-slot-user {
+    right: calc(28% + 30px);
+    top: calc(73.8% + 70px);
+    width: calc(40% + 80px);
+    height: min(35.1vw, 128px);
+    justify-content: flex-end;
+  }
+
+  .comic-dialogue-entry {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .comic-avatar {
+    position: absolute;
+    z-index: 12;
+    display: block;
+    width: min(35.1vw, 157px);
+    height: auto;
+    transform-origin: center center;
+    will-change: transform;
+    animation-name: comic-avatar-wobble;
+    animation-timing-function: steps(1, end);
+    animation-iteration-count: infinite;
+  }
+
+  .comic-avatar-scammer {
+    left: 2.3%;
+    top: 52.8%;
+    width: min(38.61vw, 172px);
+    animation-duration: 2.7s;
+    animation-delay: -0.6s;
+  }
+
+  .comic-avatar-player {
+    right: 6.2%;
+    top: 73.8%;
+    animation-duration: 3.4s;
+    animation-delay: -1.4s;
+  }
+
+  .comic-avatar-scammer {
+    animation-name: comic-avatar-wobble-scammer;
+  }
+
+  .comic-avatar-player {
+    animation-name: comic-avatar-wobble-player;
+  }
+
+  @keyframes comic-avatar-wobble-scammer {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    10% { transform: translate3d(-2px, 1px, 0) rotate(-1.2deg) scale(0.992); }
+    21% { transform: translate3d(3px, -2px, 0) rotate(3.4deg) scale(1.013); }
+    34% { transform: translate3d(-2px, 0, 0) rotate(-0.8deg) scale(1.006); }
+    49% { transform: translate3d(4px, 2px, 0) rotate(4deg) scale(0.994); }
+    63% { transform: translate3d(-1px, 3px, 0) rotate(-1deg) scale(1.012); }
+    79% { transform: translate3d(3px, -1px, 0) rotate(2.8deg) scale(0.997); }
+    91% { transform: translate3d(2px, 2px, 0) rotate(3.2deg) scale(1.005); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  }
+
+  @keyframes comic-avatar-wobble-player {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+    16% { transform: translate3d(-1px, 0, 0) rotate(-0.45deg) scale(0.999); }
+    33% { transform: translate3d(1px, -1px, 0) rotate(0.55deg) scale(1.004); }
+    52% { transform: translate3d(-1px, 1px, 0) rotate(-0.35deg) scale(1.002); }
+    74% { transform: translate3d(1px, 0, 0) rotate(0.4deg) scale(0.998); }
+    88% { transform: translate3d(0, 1px, 0) rotate(-0.25deg) scale(1.001); }
+    100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
   }
 
   .game-card {
@@ -158,11 +333,17 @@
     transform: translateY(14px);
   }
 
-  .overlay-choice-panel {
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(4px);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
-    padding: 10px;
+  .overlay-choice-panel-content {
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    aspect-ratio: 2223 / 1953;
+    overflow: visible;
+  }
+
+  .overlay-choice-panel-body {
+    position: absolute;
+    inset: 0;
+    padding: 32px 24px 24px;
   }
 
   .overlay-choice-options {
@@ -172,72 +353,88 @@
   }
 
   .comic-bubble {
-    @apply relative max-w-[85%] px-4 py-3 text-sm leading-6;
+    @apply relative text-sm leading-6;
     font-weight: 400;
-    border-radius: 14px;
-    border: 2px solid #0f172a;
-    box-shadow: 3px 3px 0 #0f172a;
+    width: fit-content;
+    max-width: min(100%, 240px);
+    padding: 12px 18px 18px;
     overflow: visible;
+    filter: drop-shadow(3px 3px 0 #0f172a);
+  }
+
+  .comic-bubble-typing {
+    width: 220px;
+    max-width: min(100%, 220px);
+  }
+
+  .comic-dialogue-slot-scammer .comic-bubble,
+  .comic-dialogue-slot-scammer .comic-image-card,
+  .comic-dialogue-slot-scammer .voice-wrap {
+    margin-right: auto;
+    margin-left: 10px;
+    max-width: 100%;
+  }
+
+  .comic-dialogue-slot-user .comic-bubble,
+  .comic-dialogue-slot-user .comic-image-card,
+  .comic-dialogue-slot-user .voice-wrap {
+    margin-left: auto;
+    max-width: 100%;
+  }
+
+  .comic-dialogue-slot-scammer .comic-dialogue-entry {
+    justify-content: flex-start;
+  }
+
+  .comic-dialogue-slot-user .comic-dialogue-entry {
+    justify-content: flex-end;
   }
 
   .comic-bubble-scammer {
-    background: #fff7ed;
     color: #7f1d1d;
   }
 
   .comic-bubble-user {
-    background: #0ea5e9;
     color: #ffffff;
   }
 
-  .comic-bubble-scammer::after {
-    content: '';
+  .comic-bubble-shape {
     position: absolute;
-    width: 0;
-    height: 0;
-    border-top: 10px solid #0f172a;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    left: 14px;
-    bottom: -11px;
+    inset: 0;
+    width: calc(100% + 28px);
+    height: calc(100% + 34px);
+    left: -12px;
+    top: -10px;
+    overflow: visible;
+    pointer-events: none;
   }
 
-  .comic-bubble-scammer::before {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-top: 8px solid #fff7ed;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    left: 16px;
-    bottom: -8px;
+  .comic-bubble-content {
+    position: relative;
     z-index: 1;
+    padding: 0;
+    word-break: break-word;
   }
 
-  .comic-bubble-user::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-top: 10px solid #0f172a;
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    right: 14px;
-    bottom: -11px;
+  .comic-bubble-shape-fill {
+    stroke: none;
   }
 
-  .comic-bubble-user::before {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-top: 8px solid #0ea5e9;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    right: 16px;
-    bottom: -8px;
-    z-index: 1;
+  .comic-bubble-shape-stroke {
+    fill: none;
+    stroke: #0f172a;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .comic-bubble-shape-scammer .comic-bubble-shape-fill {
+    fill: #fff7ed;
+  }
+
+  .comic-bubble-shape-user .comic-bubble-shape-fill {
+    fill: #0ea5e9;
   }
 
   .bubble-leaving {
@@ -248,11 +445,9 @@
   @keyframes bubble-fade-up {
     from {
       opacity: 1;
-      transform: translateY(0);
     }
     to {
       opacity: 0;
-      transform: translateY(-16px) scale(0.98);
     }
   }
 
@@ -268,6 +463,19 @@
 
   .scam-image-fake-payment {
     max-width: 110px;
+  }
+
+  .comic-image-card {
+    max-width: 85%;
+    padding: 2px 0 0;
+  }
+
+  .comic-image-card-scammer {
+    color: #7f1d1d;
+  }
+
+  .comic-image-card-user {
+    color: #0f172a;
   }
 
   .voice-row {
@@ -583,12 +791,26 @@
 
 
   @media (max-width: 768px) {
+    .comic-stage {
+      position: relative;
+    }
+
+    .comic-avatar {
+      width: 35.1vw;
+      max-width: 146px;
+    }
+
+    .comic-avatar-scammer {
+      width: 38.61vw;
+      max-width: 160px;
+    }
+
     .phone-stage {
-      width: calc(100vw - 12px);
-      height: min(calc(100vw * 16 / 9), calc(100vh - 12px));
-      max-height: calc(100vh - 12px);
-      border-radius: 14px;
-      padding: 12px;
+      width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 0;
+      padding: 0;
       font-size: 13px;
     }
 

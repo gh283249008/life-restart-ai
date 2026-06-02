@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="min-h-screen py-4">
+  <div id="app" class="min-h-screen">
     <main class="phone-stage">
       <BgmToggle />
       <router-view />
