@@ -103,3 +103,10 @@ Agent 在任务执行过程中发现的条目应遵循以下格式：
 - Context: 用户要求替换游戏页选项板资源并保留后续动画能力
 - Instructions:
   - 游戏页的板子资源优先走 CSS 背景图方式接入，便于后续对板子本体做动画。
+
+[首屏 loading 流程约定]
+- Date: 2026-06-03
+- Context: 用户决定新增 loading 页并指定放在 lobby 前
+- Instructions:
+  - loading 页放在 lobby 前，作为全局首屏资源预热入口。
+  - loading 页展示指定背景图和进度条，用于提前加载游戏关键素材资源。

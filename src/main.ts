@@ -8,13 +8,15 @@ import { initBgm } from './services/bgm'
 // 路由配置
 import HomeView from './views/HomeView.vue'
 import GameView from './views/GameView.vue'
+import LoadingView from './views/LoadingView.vue'
 import ResultView from './views/ResultView.vue'
 import PosterView from './views/PosterView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', redirect: '/lobby' },
+    { path: '/', redirect: '/loading' },
+    { path: '/loading', name: 'Loading', component: LoadingView },
     { path: '/lobby', name: 'Lobby', component: HomeView },
     { path: '/game', name: 'Game', component: GameView },
     { path: '/result', name: 'Result', component: ResultView },

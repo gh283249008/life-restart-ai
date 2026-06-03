@@ -1,6 +1,7 @@
 <template>
-  <div class="game-screen h-full flex flex-col gap-3 relative pt-10" :style="gameScreenStyle">
-    <div class="game-screen-content">
+  <div ref="gameScreenRef" class="game-screen game-stage-shell h-full flex flex-col gap-3 relative pt-10" :style="gameScreenStyle">
+    <div class="game-stage-reference-line" aria-hidden="true"></div>
+    <div class="game-screen-content game-stage-content-layer">
       <template v-if="stage === 'playing'">
         <div v-if="loadError" class="absolute inset-x-0 bottom-0 z-30 text-center text-red-700 overflow-visible">
             {{ loadError }}
@@ -10,23 +11,32 @@
             </div>
         </div>
 
-        <Transition name="choice-panel">
+        <Transition
+          name="choice-panel"
+          @before-enter="onChoicePanelBeforeEnter"
+          @enter="onChoicePanelEnter"
+          @leave="onChoicePanelLeave"
+        >
           <div
-            v-if="showChoicePanel && !loadError"
-            class="absolute z-30 overlay-choice-panel-content"
+            v-show="showChoicePanel && !loadError"
+            class="absolute z-30 game-stage-panel-layer overlay-choice-panel-content"
             :style="choicePanelBoardStyle"
           >
             <div class="overlay-choice-panel-body">
-              <h4 class="text-gray-800 mb-2 text-sm">选择回复</h4>
-              <div class="overlay-choice-options">
+              <div class="overlay-choice-options-absolute">
                 <button
                   v-for="item in currentOptions"
-                  :key="`${round}-${item.id}-${item.text}`"
-                  class="choice-button"
+                  :key="item.id"
+                  class="choice-button choice-button-layered"
+                  :style="getChoiceButtonLayerStyle(item.id)"
                   :disabled="replying || loading || delivering"
                   @click="pickOption(item.id)"
                 >
-                  <span class="mr-2">{{ item.id }}.</span>{{ item.text }}
+                  <span class="choice-button-label">
+                    <span class="choice-button-textbox">
+                      {{ item.text }}
+                    </span>
+                  </span>
                 </button>
               </div>
             </div>
@@ -34,11 +44,11 @@
         </Transition>
       </template>
 
-      <div class="comic-stage flex-1 min-h-0 pt-1 pb-24 relative -top-[300px]">
-        <img class="comic-avatar comic-avatar-scammer" :src="scammerAvatarImage" alt="坏窝瓜头像">
-        <div class="comic-dialogue-layout">
+      <div class="comic-stage game-stage game-stage-main flex-1 min-h-0 pt-1 pb-24 relative -top-[300px]">
+        <img class="comic-avatar comic-avatar-scammer game-stage-avatar-layer" :src="scammerAvatarImage" alt="坏窝瓜头像">
+        <div class="comic-dialogue-layout game-stage-dialogue-layer">
           <div v-if="loading && round === 1 && visibleHistory.length === 0" class="first-round-waiting">
-            坏窝瓜正在想坏点子……
+            坏瓜正在想坏点子ing
           </div>
           <div class="comic-dialogue-debug-layer" aria-hidden="true">
             <div class="comic-dialogue-zone comic-dialogue-zone-scammer">
@@ -71,7 +81,7 @@
                     <img :src="scammerVisibleBubble.imageUrl" alt="内部专享票" :class="['scam-image', scammerVisibleBubble.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
                     <p v-if="scammerVisibleBubble.text" class="mt-2">{{ scammerVisibleBubble.text }}</p>
                   </div>
-                  <div v-else class="comic-bubble comic-bubble-scammer" :class="{ 'comic-bubble-typing': scammerVisibleBubble.typing }">
+                  <div v-else class="comic-bubble comic-bubble-scammer" :class="{ 'comic-bubble-pop': scammerVisibleBubble.popping }">
                     <svg class="comic-bubble-shape comic-bubble-shape-scammer" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true">
                       <path class="comic-bubble-shape-fill" d="M46 30 C64 14, 110 10, 166 14 C224 18, 266 24, 288 40 C302 52, 308 72, 304 96 C300 124, 284 142, 252 150 C214 160, 178 164, 138 164 C114 170, 96 182, 74 196 C82 182, 88 170, 96 156 C66 150, 44 140, 30 124 C18 108, 14 80, 20 54 C24 40, 32 34, 46 30 Z" />
                       <path class="comic-bubble-shape-stroke" d="M46 30 C64 14, 110 10, 166 14 C224 18, 266 24, 288 40 C302 52, 308 72, 304 96 C300 124, 284 142, 252 150 C214 160, 178 164, 138 164 C114 170, 96 182, 74 196 C82 182, 88 170, 96 156 C66 150, 44 140, 30 124 C18 108, 14 80, 20 54 C24 40, 32 34, 46 30 Z" />
@@ -104,7 +114,7 @@
                     <img :src="userVisibleBubble.imageUrl" alt="内部专享票" :class="['scam-image', userVisibleBubble.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
                     <p v-if="userVisibleBubble.text" class="mt-2">{{ userVisibleBubble.text }}</p>
                   </div>
-                  <div v-else class="comic-bubble comic-bubble-user" :class="{ 'comic-bubble-typing': userVisibleBubble.typing }">
+                  <div v-else class="comic-bubble comic-bubble-user" :class="{ 'comic-bubble-pop': userVisibleBubble.popping }">
                     <svg class="comic-bubble-shape comic-bubble-shape-user" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true">
                       <path class="comic-bubble-shape-fill" d="M26 38 C44 20, 80 14, 128 16 C176 18, 214 20, 248 28 C278 36, 296 52, 302 78 C306 98, 302 120, 292 136 C280 150, 266 158, 248 164 C258 174, 270 188, 284 204 C254 190, 230 178, 204 166 C166 170, 128 170, 86 166 C58 160, 36 148, 24 132 C12 112, 10 80, 16 58 C18 50, 22 42, 26 38 Z" />
                       <path class="comic-bubble-shape-stroke" d="M26 38 C44 20, 80 14, 128 16 C176 18, 214 20, 248 28 C278 36, 296 52, 302 78 C306 98, 302 120, 292 136 C280 150, 266 158, 248 164 C258 174, 270 188, 284 204 C254 190, 230 178, 204 166 C166 170, 128 170, 86 166 C58 160, 36 148, 24 132 C12 112, 10 80, 16 58 C18 50, 22 42, 26 38 Z" />
@@ -116,12 +126,12 @@
             </div>
           </div>
         </div>
-        <img class="comic-avatar comic-avatar-player" :src="playerAvatarImage" alt="玩家头像">
+        <img class="comic-avatar comic-avatar-player game-stage-avatar-layer" :src="playerAvatarImage" alt="玩家头像">
       </div>
     </div>
 
     <div
-      class="game-screen-overlay"
+      class="game-screen-overlay game-stage-ornament-layer"
       :style="gameScreenOverlayStyle"
       aria-hidden="true"
     ></div>
@@ -175,12 +185,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import introModalBackground from '../../.monkeycode-tmp-files/bde8039f-底图-改-1.png'
 import gamePageBackground from '../../.monkeycode-tmp-files/4ee61b88-底图-07-1.webp'
 import gamePageOverlay from '../../.monkeycode-tmp-files/88f16943-顶-1.svg'
-import choicePanelBoard from '../../.monkeycode-tmp-files/aa862066-未标题-9977181-08-3.webp'
+import choicePanelBoard from '../../.monkeycode-tmp-files/288c1108-未标题-997781-09-1.webp'
+import choiceButtonAImage from '../../.monkeycode-tmp-files/746701c8-1-10-1.webp'
+import choiceButtonBImage from '../../.monkeycode-tmp-files/084072b5-2-10-2.webp'
+import choiceButtonCImage from '../../.monkeycode-tmp-files/cd690f81-3-10-3.webp'
+import choiceButtonDImage from '../../.monkeycode-tmp-files/f0536ad9-4-10-1.webp'
 import playerAvatarImage from '../../.monkeycode-tmp-files/7c5e7595-小人头-1.svg'
 import scammerAvatarImage from '../../.monkeycode-tmp-files/aec773bc-瓜头-2.svg'
 import introCopyImage from '../../.monkeycode-tmp-files/c293db87-未标题、-1.svg'
@@ -204,6 +218,7 @@ import {
 import { resetRetrieveSession } from '@/services/ragStore'
 import { startSession, recordRoundChoice, finishSession, type ChoiceCategory } from '@/services/statsStore'
 import { saveGameResultSnapshot, clearGameResultSnapshot } from '@/services/gameSessionStore'
+import { runBootPreload } from '@/services/bootPreload'
 
 type ChatMessage = {
   role: 'user' | 'scammer'
@@ -212,7 +227,7 @@ type ChatMessage = {
   voiceDurationSec?: number
   unread?: boolean
 }
-type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean; typing?: boolean }
+type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean; popping?: boolean; shownAt?: number }
 
 const INTERNAL_TICKET_IMAGE_URL = '/images/scam-internal-ticket.jpg'
 const FAKE_PAYMENT_IMAGE_URL = '/images/scam-fake-payment.jpg'
@@ -254,7 +269,7 @@ const roundSource = ref<'AI生成' | '检索兜底' | '前端兜底' | ''>('')
 const sessionRagUsed = ref(false)
 const loadError = ref('')
 const rawAiError = ref('')
-const typingIndicatorText = '神秘网友正在输入...'
+const typingIndicatorText = '坏瓜正在想坏点子ing'
 const showChoicePanel = ref(false)
 const imageScamCount = ref(0)
 const shownScamImageKinds = ref<Set<ScamImageKind>>(new Set())
@@ -269,14 +284,34 @@ let visibleUid = 0
 
 const scammerVisibleBubble = computed(() => visibleHistory.value.find((item) => item.role === 'scammer') || null)
 const userVisibleBubble = computed(() => visibleHistory.value.find((item) => item.role === 'user') || null)
+const gameScreenRef = ref<HTMLElement | null>(null)
+let gameScreenResizeObserver: ResizeObserver | null = null
+
+const GAME_BG_WIDTH = 1532
+const GAME_BG_HEIGHT = 3062
+const PLAYER_LINE_Y = 1537
+const GAME_STAGE_VISUAL_OFFSET = 270
+const PLAYER_AVATAR_RATIO = 401.24 / 400.84
+const SCAMMER_AVATAR_RATIO = 436.49 / 466.99
+
+const gameStageAnchorVars = ref<Record<string, string>>({
+  '--player-line-top': '50% ',
+  '--player-avatar-top': '60%',
+  '--scammer-avatar-top': '42%',
+  '--player-dialogue-top': '70%',
+  '--scammer-dialogue-top': '52%',
+  '--player-avatar-size': 'min(35.1vw, 157px)',
+  '--scammer-avatar-size': 'min(38.61vw, 172px)'
+})
 
 const introModalStyle = {
   backgroundImage: `url(${introModalBackground})`
 }
 
-const gameScreenStyle = {
-  backgroundImage: `url(${gamePageBackground})`
-}
+const gameScreenStyle = computed(() => ({
+  backgroundImage: `url(${gamePageBackground})`,
+  ...gameStageAnchorVars.value
+}))
 
 const gameScreenOverlayStyle = {
   backgroundImage: `url(${gamePageOverlay})`,
@@ -290,6 +325,115 @@ const choicePanelBoardStyle = computed(() => ({
   width: '100%',
   bottom: '21px'
 }))
+
+function updateGameStageAnchors() {
+  const node = gameScreenRef.value
+  if (!node) return
+
+  const width = node.clientWidth
+  const height = node.clientHeight
+  if (!width || !height) return
+
+  const scale = Math.max(width / GAME_BG_WIDTH, height / GAME_BG_HEIGHT)
+  const playerLineTopPx = PLAYER_LINE_Y * scale
+  const playerAvatarWidthPx = Math.min(width * 0.351, 157)
+  const scammerAvatarWidthPx = Math.min(width * 0.3861, 172)
+  const playerAvatarHeightPx = playerAvatarWidthPx * PLAYER_AVATAR_RATIO
+  const scammerAvatarHeightPx = scammerAvatarWidthPx * SCAMMER_AVATAR_RATIO
+  const playerAvatarTopPx = playerLineTopPx - playerAvatarHeightPx + GAME_STAGE_VISUAL_OFFSET
+  const scammerLineTopPx = playerLineTopPx - height * 0.177
+  const scammerAvatarTopPx = scammerLineTopPx - scammerAvatarHeightPx + GAME_STAGE_VISUAL_OFFSET
+
+  gameStageAnchorVars.value = {
+    '--player-line-top': `${playerLineTopPx}px`,
+    '--player-avatar-top': `${playerAvatarTopPx}px`,
+    '--scammer-avatar-top': `${scammerAvatarTopPx}px`,
+    '--player-dialogue-top': `${playerAvatarTopPx - 20}px`,
+    '--scammer-dialogue-top': `${scammerAvatarTopPx - 40}px`,
+    '--player-avatar-size': `${playerAvatarWidthPx}px`,
+    '--scammer-avatar-size': `${scammerAvatarWidthPx}px`
+  }
+}
+
+const choiceButtonImageMap: Record<string, string> = {
+  A: choiceButtonAImage,
+  B: choiceButtonBImage,
+  C: choiceButtonCImage,
+  D: choiceButtonDImage
+}
+
+const choiceButtonLayoutMap: Record<string, { left: number; top: number; width: number; height: number }> = {
+  A: { left: 190.51, top: 214.32, width: 1815, height: 400 },
+  B: { left: 187.15, top: 610.41, width: 1815, height: 400 },
+  C: { left: 187.15, top: 966.89, width: 1815, height: 400 },
+  D: { left: 187.15, top: 1351.54, width: 1815, height: 400 }
+}
+
+function getChoiceButtonLayerStyle(optionId: string) {
+  const layout = choiceButtonLayoutMap[optionId] || choiceButtonLayoutMap.D
+  const buttonImage = choiceButtonImageMap[optionId] || choiceButtonImageMap.D
+  return {
+    left: `${(layout.left / 2223) * 100}%`,
+    top: `${(layout.top / 1955.75) * 100}%`,
+    width: `${(layout.width / 2223) * 100}%`,
+    height: `${(layout.height / 1955.75) * 100}%`,
+    backgroundImage: `url(${buttonImage})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center center',
+    backgroundSize: '100% 100%'
+  }
+}
+
+function onChoicePanelBeforeEnter(el: Element) {
+  const node = el as HTMLElement
+  node.style.opacity = '1'
+  node.style.transform = 'translateY(560px) scaleX(0.984) scaleY(0.928)'
+  node.style.transformOrigin = 'center bottom'
+}
+
+function onChoicePanelEnter(el: Element, done: () => void) {
+  const node = el as HTMLElement
+  const animation = node.animate(
+    [
+      { transform: 'translateY(560px) scaleX(0.984) scaleY(0.928)' },
+      { transform: 'translateY(260px) scaleX(0.988) scaleY(0.952)', offset: 0.36 },
+      { transform: 'translateY(96px) scaleX(0.993) scaleY(0.978)', offset: 0.62 },
+      { transform: 'translateY(-16px) scaleX(1.003) scaleY(1.008)', offset: 0.84 },
+      { transform: 'translateY(7px) scaleX(0.999) scaleY(0.997)', offset: 0.9 },
+      { transform: 'translateY(0) scaleX(1) scaleY(1)' }
+    ],
+    {
+      duration: 1080,
+      easing: 'cubic-bezier(0.2, 0.9, 0.24, 1)',
+      fill: 'forwards'
+    }
+  )
+
+  animation.onfinish = () => {
+    node.style.transform = 'translateY(0) scaleX(1) scaleY(1)'
+    done()
+  }
+  animation.oncancel = () => done()
+}
+
+function onChoicePanelLeave(el: Element, done: () => void) {
+  const node = el as HTMLElement
+  const animation = node.animate(
+    [
+      { transform: 'translateY(0) scaleX(1) scaleY(1)' },
+      { transform: 'translateY(52px) scaleX(0.998) scaleY(0.992)', offset: 0.2 },
+      { transform: 'translateY(360px) scaleX(0.987) scaleY(0.942)' }
+    ],
+    {
+      duration: 520,
+      easing: 'cubic-bezier(0.3, 0.08, 0.4, 1)',
+      fill: 'forwards'
+    }
+  )
+
+  animation.onfinish = done
+  animation.oncancel = done
+}
 
 const introButtonLabel = computed(() => (
   startingFromIntro.value || prefetchState.value === 'pending'
@@ -341,28 +485,18 @@ function sleep(ms: number) {
 async function pushWithTyping(role: 'user' | 'scammer', fullText: string, token: number) {
   const text = String(fullText).trim()
   if (!text) return
-  const bubble = await pushVisibleBubble({ role, text: '' }, token)
-  if (!bubble) return
-  bubble.typing = true
-
-  for (let i = 0; i < text.length; i += 1) {
-    if (token !== deliveryToken.value) return
-    const msgIndex = visibleHistory.value.findIndex((x) => x.uid === bubble.uid)
-    if (msgIndex === -1) return
-    visibleHistory.value[msgIndex].text = text.slice(0, i + 1)
-    await nextTick()
-    await sleep(28 + Math.floor(Math.random() * 36))
-  }
-
-  const finalIndex = visibleHistory.value.findIndex((x) => x.uid === bubble.uid)
-  if (finalIndex !== -1) {
-    visibleHistory.value[finalIndex].typing = false
-  }
+  await pushVisibleBubble({ role, text }, token)
 }
 
 async function dismissVisibleBubble(uid: number, token: number) {
   const target = visibleHistory.value.find((item) => item.uid === uid)
   if (!target) return
+  const shownAt = target.shownAt || Date.now()
+  const elapsed = Date.now() - shownAt
+  if (elapsed < 1000) {
+    await sleep(1000 - elapsed)
+  }
+  if (token !== deliveryToken.value) return
   target.leaving = true
   await nextTick()
   await sleep(220)
@@ -381,38 +515,30 @@ async function pushVisibleBubble(message: ChatMessage, token: number): Promise<V
     ...message,
     uid: ++visibleUid,
     leaving: false,
-    typing: false
+    popping: true,
+    shownAt: Date.now()
   }
   visibleHistory.value.push(bubble)
+  window.setTimeout(() => {
+    const live = visibleHistory.value.find((item) => item.uid === bubble.uid)
+    if (live) {
+      live.popping = false
+    }
+  }, 320)
   return bubble
 }
 
 async function ensureTypingIndicator(token: number) {
   const last = visibleHistory.value[visibleHistory.value.length - 1]
   if (last?.role === 'scammer' && last.text === typingIndicatorText) return
-  const bubble = await pushVisibleBubble({ role: 'scammer', text: '' }, token)
-  if (!bubble) return
-  for (let i = 0; i < typingIndicatorText.length; i += 1) {
-    if (token !== deliveryToken.value) return
-    const idx = visibleHistory.value.findIndex((x) => x.uid === bubble.uid)
-    if (idx === -1) return
-    visibleHistory.value[idx].text = typingIndicatorText.slice(0, i + 1)
-    await nextTick()
-    await sleep(22)
-  }
+  await pushVisibleBubble({ role: 'scammer', text: typingIndicatorText }, token)
 }
 
 async function eraseTypingIndicator(token: number) {
   const idx = visibleHistory.value.findIndex((m) => m.role === 'scammer' && m.text === typingIndicatorText)
   if (idx === -1) return
-  for (let i = typingIndicatorText.length; i >= 0; i -= 1) {
-    if (token !== deliveryToken.value) return
-    visibleHistory.value[idx].text = typingIndicatorText.slice(0, i)
-    await nextTick()
-    await sleep(16)
-  }
   if (token !== deliveryToken.value) return
-  visibleHistory.value.splice(idx, 1)
+  await dismissVisibleBubble(visibleHistory.value[idx].uid, token)
 }
 
 function clearTypingIndicator() {
@@ -422,16 +548,6 @@ function clearTypingIndicator() {
 async function eraseVisibleHistory(token: number) {
   const snapshot = [...visibleHistory.value]
   for (const current of snapshot) {
-    if (token !== deliveryToken.value) return
-    const full = current?.text || ''
-    for (let i = full.length; i >= 0; i -= 1) {
-      if (token !== deliveryToken.value) return
-      const live = visibleHistory.value.find((item) => item.uid === current.uid)
-      if (!live) break
-      live.text = full.slice(0, i)
-      await nextTick()
-      await sleep(10)
-    }
     if (token !== deliveryToken.value) return
     await dismissVisibleBubble(current.uid, token)
   }
@@ -732,8 +848,21 @@ async function restartGame() {
   void playIntroReveal()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  updateGameStageAnchors()
+  if (typeof ResizeObserver !== 'undefined' && gameScreenRef.value) {
+    gameScreenResizeObserver = new ResizeObserver(() => {
+      updateGameStageAnchors()
+    })
+    gameScreenResizeObserver.observe(gameScreenRef.value)
+  }
+  await runBootPreload()
   preloadScamImages()
   restartGame()
+})
+
+onBeforeUnmount(() => {
+  gameScreenResizeObserver?.disconnect()
+  gameScreenResizeObserver = null
 })
 </script>
