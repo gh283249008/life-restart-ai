@@ -82,10 +82,6 @@
                     <p v-if="scammerVisibleBubble.text" class="mt-2">{{ scammerVisibleBubble.text }}</p>
                   </div>
                   <div v-else class="comic-bubble comic-bubble-scammer" :class="{ 'comic-bubble-pop': scammerVisibleBubble.popping }">
-                    <svg class="comic-bubble-shape comic-bubble-shape-scammer" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true">
-                      <path class="comic-bubble-shape-fill" d="M46 30 C64 14, 110 10, 166 14 C224 18, 266 24, 288 40 C302 52, 308 72, 304 96 C300 124, 284 142, 252 150 C214 160, 178 164, 138 164 C114 170, 96 182, 74 196 C82 182, 88 170, 96 156 C66 150, 44 140, 30 124 C18 108, 14 80, 20 54 C24 40, 32 34, 46 30 Z" />
-                      <path class="comic-bubble-shape-stroke" d="M46 30 C64 14, 110 10, 166 14 C224 18, 266 24, 288 40 C302 52, 308 72, 304 96 C300 124, 284 142, 252 150 C214 160, 178 164, 138 164 C114 170, 96 182, 74 196 C82 182, 88 170, 96 156 C66 150, 44 140, 30 124 C18 108, 14 80, 20 54 C24 40, 32 34, 46 30 Z" />
-                    </svg>
                     <div class="comic-bubble-content">{{ scammerVisibleBubble.text }}</div>
                   </div>
                 </div>
@@ -115,10 +111,6 @@
                     <p v-if="userVisibleBubble.text" class="mt-2">{{ userVisibleBubble.text }}</p>
                   </div>
                   <div v-else class="comic-bubble comic-bubble-user" :class="{ 'comic-bubble-pop': userVisibleBubble.popping }">
-                    <svg class="comic-bubble-shape comic-bubble-shape-user" viewBox="0 0 320 220" preserveAspectRatio="none" aria-hidden="true">
-                      <path class="comic-bubble-shape-fill" d="M26 38 C44 20, 80 14, 128 16 C176 18, 214 20, 248 28 C278 36, 296 52, 302 78 C306 98, 302 120, 292 136 C280 150, 266 158, 248 164 C258 174, 270 188, 284 204 C254 190, 230 178, 204 166 C166 170, 128 170, 86 166 C58 160, 36 148, 24 132 C12 112, 10 80, 16 58 C18 50, 22 42, 26 38 Z" />
-                      <path class="comic-bubble-shape-stroke" d="M26 38 C44 20, 80 14, 128 16 C176 18, 214 20, 248 28 C278 36, 296 52, 302 78 C306 98, 302 120, 292 136 C280 150, 266 158, 248 164 C258 174, 270 188, 284 204 C254 190, 230 178, 204 166 C166 170, 128 170, 86 166 C58 160, 36 148, 24 132 C12 112, 10 80, 16 58 C18 50, 22 42, 26 38 Z" />
-                    </svg>
                     <div class="comic-bubble-content">{{ userVisibleBubble.text }}</div>
                   </div>
                 </div>
@@ -219,6 +211,7 @@ import { resetRetrieveSession } from '@/services/ragStore'
 import { startSession, recordRoundChoice, finishSession, type ChoiceCategory } from '@/services/statsStore'
 import { saveGameResultSnapshot, clearGameResultSnapshot } from '@/services/gameSessionStore'
 import { runBootPreload } from '@/services/bootPreload'
+import { playBubbleSfx } from '@/services/uiSfx'
 
 type ChatMessage = {
   role: 'user' | 'scammer'
@@ -519,6 +512,9 @@ async function pushVisibleBubble(message: ChatMessage, token: number): Promise<V
     shownAt: Date.now()
   }
   visibleHistory.value.push(bubble)
+  if (bubble.text || bubble.voiceDurationSec) {
+    playBubbleSfx()
+  }
   window.setTimeout(() => {
     const live = visibleHistory.value.find((item) => item.uid === bubble.uid)
     if (live) {
