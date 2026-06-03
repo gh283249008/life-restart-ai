@@ -207,13 +207,7 @@
   }
 
   .game-stage-reference-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: var(--player-line-top);
-    border-top: 1.5px dashed rgba(239, 68, 68, 0.9);
-    z-index: 10;
-    pointer-events: none;
+    display: none;
   }
 
   .game-stage-dialogue-layer {
