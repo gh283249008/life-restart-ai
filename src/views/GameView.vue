@@ -78,7 +78,7 @@
                     </div>
                   </template>
                   <div v-else-if="scammerVisibleBubble.imageUrl" class="comic-image-card comic-image-card-scammer">
-                    <img :src="scammerVisibleBubble.imageUrl" alt="内部专享票" :class="['scam-image', scammerVisibleBubble.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
+                    <img :src="scammerVisibleBubble.imageUrl" alt="内部专享票" class="scam-image" />
                     <p v-if="scammerVisibleBubble.text" class="mt-2">{{ scammerVisibleBubble.text }}</p>
                   </div>
                   <div v-else class="comic-bubble comic-bubble-scammer" :class="{ 'comic-bubble-pop': scammerVisibleBubble.popping }">
@@ -107,7 +107,7 @@
                     </div>
                   </template>
                   <div v-else-if="userVisibleBubble.imageUrl" class="comic-image-card comic-image-card-user">
-                    <img :src="userVisibleBubble.imageUrl" alt="内部专享票" :class="['scam-image', userVisibleBubble.imageUrl?.includes('scam-fake-payment') ? 'scam-image-fake-payment' : '']" />
+                    <img :src="userVisibleBubble.imageUrl" alt="内部专享票" class="scam-image" />
                     <p v-if="userVisibleBubble.text" class="mt-2">{{ userVisibleBubble.text }}</p>
                   </div>
                   <div v-else class="comic-bubble comic-bubble-user" :class="{ 'comic-bubble-pop': userVisibleBubble.popping }">
@@ -195,6 +195,10 @@ import introScoreImage from '../../.monkeycode-tmp-files/5d1ec481-记分-1.svg'
 import introTipsImage from '../../.monkeycode-tmp-files/eded9ce0-小贴士(1)-2.svg'
 import introButtonPendingImage from '../../.monkeycode-tmp-files/7bf2b27d-微信图片_20260602132054_1218_393-1.png'
 import introButtonReadyImage from '../../.monkeycode-tmp-files/28b89bf9-微信图片_20260602131542_1217_393-2.png'
+import scamInternalTicketImage from '../../.monkeycode-tmp-files/05d317e1-未标题-1-01(1)-1.webp'
+import scamFakePaymentImage from '../../.monkeycode-tmp-files/67ab8e05-未标题-4-01-1.webp'
+import scamFakeChatRecordImage from '../../.monkeycode-tmp-files/fff34ff0-未标题-3-01(1)-2.webp'
+import scamFakeCredentialImage from '../../.monkeycode-tmp-files/fe9b0a65-未标题-3-01(1)-1.webp'
 import {
   generateFinalReport,
   generateFinalScammerReply,
@@ -222,10 +226,12 @@ type ChatMessage = {
 }
 type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean; popping?: boolean; shownAt?: number }
 
-const INTERNAL_TICKET_IMAGE_URL = '/images/scam-internal-ticket.jpg'
-const FAKE_PAYMENT_IMAGE_URL = '/images/scam-fake-payment.jpg'
+const INTERNAL_TICKET_IMAGE_URL = scamInternalTicketImage
+const FAKE_PAYMENT_IMAGE_URL = scamFakePaymentImage
+const FAKE_CHAT_RECORD_IMAGE_URL = scamFakeChatRecordImage
+const FAKE_CREDENTIAL_IMAGE_URL = scamFakeCredentialImage
 
-type ScamImageKind = 'internal_ticket' | 'fake_payment'
+type ScamImageKind = 'internal_ticket' | 'fake_payment' | 'fake_chat_record' | 'fake_credential'
 
 const SCAM_IMAGE_POOL: Array<{ kind: ScamImageKind; url: string; narrative: string }> = [
   {
@@ -237,6 +243,16 @@ const SCAM_IMAGE_POOL: Array<{ kind: ScamImageKind; url: string; narrative: stri
     kind: 'fake_payment',
     url: FAKE_PAYMENT_IMAGE_URL,
     narrative: '（骗子发送了一张“虚假支付截图”，诱导你先放票或补尾款）'
+  },
+  {
+    kind: 'fake_chat_record',
+    url: FAKE_CHAT_RECORD_IMAGE_URL,
+    narrative: '（骗子发送了一张“伪造聊天记录截图”，诱导你相信交易真实发生过）'
+  },
+  {
+    kind: 'fake_credential',
+    url: FAKE_CREDENTIAL_IMAGE_URL,
+    narrative: '（骗子发送了一张“伪造凭证截图”，诱导你相信自己有真实票源和转票资格）'
   }
 ]
 
@@ -740,10 +756,14 @@ async function endOrNextRound(prefetchedPack?: RoundPackResult | Promise<RoundPa
     } catch {
       report = {
         result: score.value >= 20 ? '认输了' : '得逞了',
+        playerSummary:
+          score.value >= 20
+            ? '这局你把流程守得很稳，坏瓜套路一层层都没能套住你。'
+            : '这局出现了风险暴露点，好在现在已经复盘到位，下一次会更稳。',
         scammerSummary:
           score.value >= 20
-            ? '你这波全程走官方流程，坏窝瓜这单彻底没戏。'
-            : '先别慌，这局有风险暴露点，下一局按平台验真就能稳住。',
+            ? '这只坏瓜今天属于白忙活型选手，套路抡圆了，最后还是空手下班。'
+            : '这只坏瓜今天差点钻到空子里，但复盘完这一局，它下次就没这么好下嘴了。',
         tips: [
           '任何“先转账后验票”都属于高风险信号。',
           '验证码、身份证、银行卡信息都不要发给陌生人。',
