@@ -43,6 +43,7 @@ export class RoundGenerationError extends Error {
 
 export interface FinalReport {
   result: '得逞了' | '认输了'
+  playerSummary: string
   scammerSummary: string
   tips: string[]
 }
@@ -768,31 +769,36 @@ export async function generateFinalReport(
   const content = await callLLM([
     {
       role: 'system',
-      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出有小红书网感的结算总结和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。'
+      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出玩家总结、AI评价和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。'
     },
     {
       role: 'user',
       content: `历史对话：${history.map((x) => `${x.role === 'user' ? '我' : '神秘网友'}:${x.text}`).join(' | ')}
-语气规则：
-1) 总结语必须是 1-2 句，年轻口语、有网感、有情绪，不要干巴巴。
-2) 如果结果偏向“认输了”，且玩家坚持走官方/验真/不转账，语气要鼓励与点赞。
-3) 如果玩家多次戏耍骗子（整局明显在整活），语气要夸奖机智与反诈意识。
-4) 如果结果偏向“得逞了”或出现被骗风险，语气要安慰，强调可补救动作，避免指责。
-5) 禁止脏话、羞辱、冷嘲热讽；不要出现真实姓名或隐私信息。
+输出规则：
+1) playerSummary 是玩家总结，1句，18-40字，概括这局玩家的表现与结果，语气自然，像结算页文案。
+2) scammerSummary 是 AI 评价，1-2句，年轻口语、有网感、有情绪，像“今日坏瓜图鉴”里的收尾锐评，总长度不超过40个字，标点符号也算字。
+3) 如果结果偏向“认输了”，且玩家坚持走官方/验真/不转账，语气要鼓励与点赞。
+4) 如果玩家多次戏耍骗子（整局明显在整活），语气要夸奖机智与反诈意识。
+5) 如果结果偏向“得逞了”或出现被骗风险，语气要安慰，强调可补救动作，避免指责。
+6) tips 保持 3 条，内容是强相关反诈提醒。
+7) 禁止脏话、羞辱、冷嘲热讽；不要出现真实姓名或隐私信息。
 输出：
 {
   "result":"得逞了|认输了",
-  "scammerSummary":"结算总结文案（1-2句，小红书网感，按结果匹配鼓励/夸奖/安慰语气）",
+  "playerSummary":"玩家总结（1句）",
+  "scammerSummary":"AI评价文案（1-2句，小红书网感，按结果匹配鼓励/夸奖/安慰语气，最多40字，标点也算字）",
   "tips":["科普1","科普2","科普3"]
 }`
     }
   ])
 
   const parsed = JSON.parse(extractJson(content)) as FinalReport
-  if (!parsed.tips || parsed.tips.length < 3 || !parsed.scammerSummary) {
+  if (!parsed.tips || parsed.tips.length < 3 || !parsed.scammerSummary || !parsed.playerSummary) {
     throw new Error('结算数据异常')
   }
+  parsed.playerSummary = sanitizeUnsafeText(parsed.playerSummary)
   parsed.scammerSummary = sanitizeUnsafeText(parsed.scammerSummary)
+  parsed.scammerSummary = Array.from(parsed.scammerSummary).slice(0, 40).join('')
   parsed.tips = parsed.tips.map((t) => sanitizeUnsafeText(t))
   if (parsed.result !== '得逞了' && parsed.result !== '认输了') {
     parsed.result = '得逞了'
