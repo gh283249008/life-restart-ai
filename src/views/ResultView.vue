@@ -133,7 +133,7 @@ import resultShareButtonImage from '../../.monkeycode-tmp-files/88bd230f-分享�
 import resultSportsStickerImage from '../../.monkeycode-tmp-files/d4641f41-体育赛事贴纸-50dpi.webp'
 import resultSuccessStickerImage from '../../.monkeycode-tmp-files/11930f20-成功-16(1)-1.webp'
 import resultFailureStickerImage from '../../.monkeycode-tmp-files/c513f57e-失败-16(1)-2.webp'
-import resultShareToXhsButtonImage from '../../.monkeycode-tmp-files/55a9c3f8-分享到小红书-1.png'
+import resultShareToXhsButtonImage from '../../.monkeycode-tmp-files/share-to-xhs-button.png'
 
 const RESULT_BG_WIDTH = 2223
 const RESULT_BG_HEIGHT = 1955.75
