@@ -326,7 +326,7 @@
 
   .result-board-content-15 {
     left: calc(4.0909% + 34px);
-    top: calc(71.3253% + 53px);
+    top: calc(71.3253% + 58px);
     width: calc(41.3603% - 68px);
   }
 
@@ -338,7 +338,7 @@
 
   .result-board-content-16 {
     left: calc(4.4805% + 34px);
-    top: calc(45.769% + 51px);
+    top: calc(45.769% + 54px);
     width: calc(40.5731% - 68px);
     color: #5b2c19;
   }
@@ -427,7 +427,7 @@
     font-size: clamp(16px, 1.7vw, 20px);
     line-height: 1.1;
     font-weight: 600;
-    color: #6c2f16;
+    color: #c63b32;
   }
 
   .result-villain-card-desc {

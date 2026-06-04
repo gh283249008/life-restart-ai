@@ -29,7 +29,6 @@
           <div v-if="resultVillainCard" class="result-board-content result-board-content-16">
             <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
             <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
-            <p v-if="snapshot?.finalReport?.playerSummary" class="result-villain-card-player">玩家总结：{{ snapshot.finalReport.playerSummary }}</p>
             <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
           </div>
 
@@ -79,7 +78,6 @@
         <div v-if="resultVillainCard" class="result-board-content result-board-content-16">
           <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
           <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
-          <p v-if="snapshot?.finalReport?.playerSummary" class="result-villain-card-player">玩家总结：{{ snapshot.finalReport.playerSummary }}</p>
           <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
         </div>
 
