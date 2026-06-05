@@ -306,6 +306,13 @@
     position: absolute;
   }
 
+  .result-text-box {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
   .result-board-14 {
     left: 4.0918%;
     top: 19.4974%;
@@ -325,9 +332,10 @@
   }
 
   .result-board-content-15 {
-    left: calc(4.0909% + 34px);
-    top: calc(71.3253% + 58px);
-    width: calc(41.3603% - 68px);
+    left: 6.52%;
+    top: 79.40%;
+    width: 35.95%;
+    height: 8.55%;
   }
 
   .result-board-content-14 {
@@ -337,19 +345,70 @@
   }
 
   .result-board-content-16 {
-    left: calc(4.4805% + 34px);
-    top: calc(45.769% + 54px);
-    width: calc(40.5731% - 68px);
+    left: 7.13%;
+    top: 53.13%;
+    width: 35.28%;
+    height: 16.89%;
     color: #5b2c19;
+    overflow: hidden;
+  }
+
+  .result-text-box-15 {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .result-text-box-16 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .result-text-box-16.is-compact .result-villain-card-name {
+    font-size: clamp(14px, 1.3vw, 16.4px);
+    line-height: 1.06;
+  }
+
+  .result-text-box-16.is-compact .result-villain-card-desc {
+    margin-top: 1px;
+    font-size: clamp(9.2px, 0.82vw, 10.6px);
+    line-height: 1.18;
+  }
+
+  .result-text-box-16.is-compact .result-villain-card-ai {
+    margin-top: 5px;
+    font-size: clamp(9.2px, 0.8vw, 10.4px);
+    line-height: 1.18;
+  }
+
+  .result-text-box-16.is-ultra-compact .result-villain-card-name {
+    font-size: clamp(13.2px, 1.18vw, 15.2px);
+    line-height: 1.02;
+  }
+
+  .result-text-box-16.is-ultra-compact .result-villain-card-desc {
+    margin-top: 1px;
+    font-size: clamp(8.6px, 0.74vw, 9.8px);
+    line-height: 1.12;
+  }
+
+  .result-text-box-16.is-ultra-compact .result-villain-card-ai {
+    margin-top: 4px;
+    font-size: clamp(8.6px, 0.72vw, 9.6px);
+    line-height: 1.12;
   }
 
   .result-board-tip {
     margin: 0;
     color: #5d2e18;
-    font-size: clamp(10.8px, 1.152vw, 13.5px);
-    line-height: 1.1;
+    font-size: clamp(10px, 1.02vw, 12.4px);
+    line-height: 1.06;
     letter-spacing: 0.01em;
     word-break: break-word;
+    overflow: hidden;
+    max-height: 100%;
   }
 
   .result-outcome-sticker {
@@ -424,17 +483,19 @@
   }
 
   .result-villain-card-name {
-    font-size: clamp(16px, 1.7vw, 20px);
+    font-size: clamp(15px, 1.45vw, 18px);
     line-height: 1.1;
     font-weight: 600;
     color: #c63b32;
+    flex: 0 0 auto;
   }
 
   .result-villain-card-desc {
-    margin-top: 3px;
-    font-size: clamp(11px, 1.06vw, 13px);
-    line-height: 1.35;
+    margin-top: 2px;
+    font-size: clamp(10px, 0.92vw, 11.6px);
+    line-height: 1.24;
     color: #6c2f16;
+    flex: 0 0 auto;
   }
 
   .result-villain-card-player {
@@ -445,10 +506,11 @@
   }
 
   .result-villain-card-ai {
-    margin-top: 8px;
-    font-size: clamp(10.5px, 1vw, 12px);
-    line-height: 1.35;
+    margin-top: 7px;
+    font-size: clamp(10px, 0.9vw, 11.4px);
+    line-height: 1.24;
     color: #6c2f16;
+    flex: 1 1 auto;
   }
 
   .result-sticker {
@@ -598,6 +660,14 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
+  }
+
+  .result-poster-save-hint {
+    margin: 10px 0 0;
+    color: #7c3d1f;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: center;
   }
 
   .result-poster-share-image {

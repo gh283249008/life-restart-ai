@@ -27,13 +27,17 @@
           </div>
 
           <div v-if="resultVillainCard" class="result-board-content result-board-content-16">
-            <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
-            <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
-            <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
+            <div ref="setResultVillainTextBoxRef" class="result-text-box result-text-box-16" :class="resultVillainCardCompactClass">
+              <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
+              <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
+              <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
+            </div>
           </div>
 
           <div class="result-board-content result-board-content-15">
-            <p class="result-board-tip">{{ resultInsightTip }}</p>
+            <div class="result-text-box result-text-box-15">
+              <p class="result-board-tip">{{ resultInsightTip }}</p>
+            </div>
           </div>
         </div>
 
@@ -76,13 +80,17 @@
         </div>
 
         <div v-if="resultVillainCard" class="result-board-content result-board-content-16">
-          <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
-          <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
-          <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
+          <div ref="setResultVillainTextBoxRef" class="result-text-box result-text-box-16" :class="resultVillainCardCompactClass">
+            <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
+            <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
+            <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
+          </div>
         </div>
 
         <div class="result-board-content result-board-content-15">
-          <p class="result-board-tip">{{ resultInsightTip }}</p>
+          <div class="result-text-box result-text-box-15">
+            <p class="result-board-tip">{{ resultInsightTip }}</p>
+          </div>
         </div>
       </div>
 
@@ -113,6 +121,7 @@
           <button type="button" class="result-poster-close" @click="closePosterPreview" aria-label="关闭预览">×</button>
           <img class="result-poster-preview-image" :src="resultPosterPreviewUrl" alt="结算页分享海报预览" />
         </div>
+        <p class="result-poster-save-hint">长按图片保存到相册</p>
         <button type="button" class="result-poster-share-button" @click="shareToXiaohongshu" aria-label="分享到小红书">
           <img class="result-poster-share-image" :src="resultShareToXhsButtonImage" alt="分享到小红书" @error="handleShareButtonImageError" />
           <span v-if="shareButtonImageBroken" class="result-poster-share-fallback">分享到小红书</span>
@@ -186,6 +195,8 @@ const resultPosterFile = ref<File | null>(null)
 const posterShareTip = ref('')
 const resultActionTip = ref('')
 const shareButtonImageBroken = ref(false)
+const resultVillainTextBoxRefs = ref<HTMLElement[]>([])
+const resultVillainCardCompactMode = ref<'normal' | 'compact' | 'ultra-compact'>('normal')
 let resultStickerBoingTimer = 0
 let resultStickerFeedbackTimer = 0
 let posterShareTimer = 0
@@ -212,7 +223,45 @@ function limitTextLength(text: string, maxLength: number) {
   return Array.from(text || '').slice(0, maxLength).join('')
 }
 
-const resultScammerSummary = limitTextLength(snapshot?.finalReport?.scammerSummary || '', 40)
+const resultScammerSummary = snapshot?.finalReport?.scammerSummary || ''
+const resultVillainCardCompactClass = ref<Record<string, boolean>>({})
+
+function setResultVillainTextBoxRef(element: Element | null) {
+  if (!(element instanceof HTMLElement)) return
+  if (resultVillainTextBoxRefs.value.includes(element)) return
+  resultVillainTextBoxRefs.value.push(element)
+}
+
+function syncResultVillainCardCompactClass() {
+  resultVillainCardCompactClass.value = {
+    'is-compact': resultVillainCardCompactMode.value === 'compact' || resultVillainCardCompactMode.value === 'ultra-compact',
+    'is-ultra-compact': resultVillainCardCompactMode.value === 'ultra-compact'
+  }
+}
+
+function hasTextBoxOverflow(element: HTMLElement) {
+  return element.scrollHeight - element.clientHeight > 1
+}
+
+function updateResultVillainCardCompactMode() {
+  const primaryBox = resultVillainTextBoxRefs.value[0]
+  if (!primaryBox) {
+    resultVillainCardCompactMode.value = 'normal'
+    syncResultVillainCardCompactClass()
+    return
+  }
+
+  const modeOrder: Array<'normal' | 'compact' | 'ultra-compact'> = ['normal', 'compact', 'ultra-compact']
+
+  for (const mode of modeOrder) {
+    resultVillainCardCompactMode.value = mode
+    syncResultVillainCardCompactClass()
+    const overflow = hasTextBoxOverflow(primaryBox)
+    if (!overflow) {
+      return
+    }
+  }
+}
 
 function updateResultStageVars() {
   const node = resultScreenRef.value
@@ -239,23 +288,25 @@ function updateResultStageVars() {
 onMounted(async () => {
   await nextTick()
   updateResultStageVars()
+  updateResultVillainCardCompactMode()
 
   if (typeof ResizeObserver !== 'undefined') {
     resultResizeObserver = new ResizeObserver(() => {
       updateResultStageVars()
+      updateResultVillainCardCompactMode()
     })
     if (resultScreenRef.value) {
       resultResizeObserver.observe(resultScreenRef.value)
     }
   }
 
-  window.addEventListener('resize', updateResultStageVars)
+  window.addEventListener('resize', handleResultResize)
 })
 
 onBeforeUnmount(() => {
   resultResizeObserver?.disconnect()
   resultResizeObserver = null
-  window.removeEventListener('resize', updateResultStageVars)
+  window.removeEventListener('resize', handleResultResize)
   window.clearTimeout(resultStickerBoingTimer)
   window.clearTimeout(resultStickerFeedbackTimer)
   window.clearTimeout(posterShareTimer)
@@ -264,6 +315,11 @@ onBeforeUnmount(() => {
   }
   resultPosterFile.value = null
 })
+
+function handleResultResize() {
+  updateResultStageVars()
+  updateResultVillainCardCompactMode()
+}
 
 function triggerResultStickerBoing() {
   resultStickerBoing.value = false
@@ -310,9 +366,9 @@ async function handleGeneratePoster() {
     shareButtonImageBroken.value = false
     const savedToAlbum = await trySavePosterToAlbum()
     if (savedToAlbum) {
-      resultActionTip.value = '已打开系统分享面板，请保存到相册或继续分享。'
+      resultActionTip.value = ''
     } else {
-      resultActionTip.value = '已生成图片，请长按预览图保存到相册，或继续分享到小红书。'
+      resultActionTip.value = ''
     }
   } catch (error) {
     resultActionTip.value = error instanceof Error ? `生成图片失败：${error.message}` : '生成图片失败，请重试。'
