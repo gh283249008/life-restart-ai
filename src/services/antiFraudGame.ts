@@ -96,7 +96,7 @@ export const SCENARIO_THEMES: ScenarioTheme[] = [
   { id: 'last_minute', name: '开场前捡漏', brief: '临开场前放票，骗子制造紧迫感诱导快速转账。' },
   { id: 'fan_group', name: '粉丝群代抢', brief: '骗子冒充后援会管理员，诱导提供账号和验证码。' },
   { id: 'overseas_show', name: '海外场次代购', brief: '跨境票务代购，骗子以海关和税费名义二次收费。' },
-  { id: 'sports_event', name: '体育赛事（含世界杯）', brief: '世界杯、联赛和总决赛等热门场次一票难求，骗子冒充内部渠道或临时放票，诱导先款后票与私下交易。' },
+  { id: 'sports_event', name: '世界杯赛事', brief: '世界杯、联赛和总决赛等热门场次一票难求，骗子冒充内部渠道或临时放票，诱导先款后票与私下交易。' },
   { id: 'scalper_ticket', name: '黄牛票', brief: '骗子伪装黄牛称有保真票源，诱导脱离平台并追加“加急费”。' },
   { id: 'fake_platform', name: '假平台/二手买票平台', brief: '骗子发送仿冒票务平台链接，诱导登录并窃取账号和支付信息。' },
   { id: 'refund_scam', name: '退票诈骗', brief: '骗子冒充客服办理退票退款，诱导提供验证码或进行屏幕共享。' }

@@ -114,7 +114,8 @@
           <img class="result-poster-preview-image" :src="resultPosterPreviewUrl" alt="结算页分享海报预览" />
         </div>
         <button type="button" class="result-poster-share-button" @click="shareToXiaohongshu" aria-label="分享到小红书">
-          <img class="result-poster-share-image" :src="resultShareToXhsButtonImage" alt="分享到小红书" />
+          <img class="result-poster-share-image" :src="resultShareToXhsButtonImage" alt="分享到小红书" @error="handleShareButtonImageError" />
+          <span v-if="shareButtonImageBroken" class="result-poster-share-fallback">分享到小红书</span>
         </button>
         <p v-if="posterShareTip" class="result-poster-share-tip">{{ posterShareTip }}</p>
       </div>
@@ -133,7 +134,7 @@ import resultShareButtonImage from '../../.monkeycode-tmp-files/88bd230f-分享�
 import resultSportsStickerImage from '../../.monkeycode-tmp-files/d4641f41-体育赛事贴纸-50dpi.webp'
 import resultSuccessStickerImage from '../../.monkeycode-tmp-files/11930f20-成功-16(1)-1.webp'
 import resultFailureStickerImage from '../../.monkeycode-tmp-files/c513f57e-失败-16(1)-2.webp'
-import resultShareToXhsButtonImage from '../../.monkeycode-tmp-files/share-to-xhs-button.png'
+import resultShareToXhsButtonImage from '../../.monkeycode-tmp-files/share-to-xhs-button-v3.webp'
 
 const RESULT_BG_WIDTH = 2223
 const RESULT_BG_HEIGHT = 1955.75
@@ -184,6 +185,7 @@ const resultPosterPreviewUrl = ref('')
 const resultPosterFile = ref<File | null>(null)
 const posterShareTip = ref('')
 const resultActionTip = ref('')
+const shareButtonImageBroken = ref(false)
 let resultStickerBoingTimer = 0
 let resultStickerFeedbackTimer = 0
 let posterShareTimer = 0
@@ -305,12 +307,12 @@ async function handleGeneratePoster() {
     const objectUrl = URL.createObjectURL(imageBlob)
     resultPosterFile.value = new File([imageBlob], `票务反诈结算页-${Date.now()}.png`, { type: 'image/png' })
     resultPosterPreviewUrl.value = objectUrl
+    shareButtonImageBroken.value = false
     const savedToAlbum = await trySavePosterToAlbum()
     if (savedToAlbum) {
-      resultActionTip.value = '已打开系统分享面板，请保存到相册。'
+      resultActionTip.value = '已打开系统分享面板，请保存到相册或继续分享。'
     } else {
-      autoDownloadPoster(objectUrl)
-      resultActionTip.value = '已生成图片，请长按预览图保存到相册。'
+      resultActionTip.value = '已生成图片，请长按预览图保存到相册，或继续分享到小红书。'
     }
   } catch (error) {
     resultActionTip.value = error instanceof Error ? `生成图片失败：${error.message}` : '生成图片失败，请重试。'
@@ -560,6 +562,11 @@ function closePosterPreview() {
   resultPosterPreviewUrl.value = ''
   resultPosterFile.value = null
   posterShareTip.value = ''
+  shareButtonImageBroken.value = false
+}
+
+function handleShareButtonImageError() {
+  shareButtonImageBroken.value = true
 }
 
 function shareToXiaohongshu() {

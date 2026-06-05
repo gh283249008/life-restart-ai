@@ -588,7 +588,9 @@
   }
 
   .result-poster-share-button {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 70%;
     margin: 10px auto 0;
     padding: 0;
@@ -603,6 +605,18 @@
     width: 100%;
     height: auto;
     pointer-events: none;
+  }
+
+  .result-poster-share-fallback {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.1;
+    font-weight: 600;
+    text-align: center;
   }
 
   .result-poster-share-tip {
