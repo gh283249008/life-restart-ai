@@ -25,10 +25,10 @@
             <div class="overlay-choice-panel-body">
               <div class="overlay-choice-options-absolute">
                 <button
-                  v-for="item in currentOptions"
+                  v-for="item in displayedOptions"
                   :key="item.id"
                   class="choice-button choice-button-layered"
-                  :style="getChoiceButtonLayerStyle(item.id)"
+                  :style="getChoiceButtonLayerStyle(item.displaySlot)"
                   :disabled="replying || loading || delivering"
                   @click="pickOption(item.id)"
                 >
@@ -225,6 +225,7 @@ type ChatMessage = {
   unread?: boolean
 }
 type VisibleMessage = ChatMessage & { uid: number; leaving?: boolean; popping?: boolean; shownAt?: number }
+type DisplayedOption = ScenarioOption & { displaySlot: 'A' | 'B' | 'C' | 'D' }
 
 const INTERNAL_TICKET_IMAGE_URL = scamInternalTicketImage
 const FAKE_PAYMENT_IMAGE_URL = scamFakePaymentImage
@@ -270,6 +271,7 @@ const deliveryToken = ref(0)
 const chatHistory = ref<ChatMessage[]>([])
 const visibleHistory = ref<VisibleMessage[]>([])
 const currentOptions = ref<ScenarioOption[]>([])
+const displayedOptions = ref<DisplayedOption[]>([])
 const currentCorrectOptionId = ref('')
 const finalReport = ref<FinalReport | null>(null)
 const lastJudge = ref('')
@@ -393,6 +395,24 @@ function getChoiceButtonLayerStyle(optionId: string) {
   }
 }
 
+function shuffleArray<T>(items: T[]) {
+  const cloned = [...items]
+  for (let i = cloned.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1))
+    ;[cloned[i], cloned[randomIndex]] = [cloned[randomIndex], cloned[i]]
+  }
+  return cloned
+}
+
+function assignDisplayedOptions(options: ScenarioOption[]) {
+  const shuffled = shuffleArray(options)
+  const slots: Array<'A' | 'B' | 'C' | 'D'> = ['A', 'B', 'C', 'D']
+  displayedOptions.value = shuffled.map((item, index) => ({
+    ...item,
+    displaySlot: slots[index] || 'D'
+  }))
+}
+
 function onChoicePanelBeforeEnter(el: Element) {
   const node = el as HTMLElement
   node.style.opacity = '1'
@@ -502,8 +522,9 @@ async function dismissVisibleBubble(uid: number, token: number) {
   if (!target) return
   const shownAt = target.shownAt || Date.now()
   const elapsed = Date.now() - shownAt
-  if (elapsed < 1000) {
-    await sleep(1000 - elapsed)
+  const minVisibleMs = target.role === 'scammer' ? 1300 : 1000
+  if (elapsed < minVisibleMs) {
+    await sleep(minVisibleMs - elapsed)
   }
   if (token !== deliveryToken.value) return
   target.leaving = true
@@ -666,6 +687,7 @@ async function loadRoundPack(prefetchedPack?: RoundPackResult | Promise<RoundPac
       await injectScamImage(token)
     }
     currentOptions.value = pack.options
+    assignDisplayedOptions(pack.options)
     currentCorrectOptionId.value = pack.correctOptionId
     showChoicePanel.value = true
   } catch (error) {
@@ -840,6 +862,7 @@ async function restartGame() {
   chatHistory.value = []
   visibleHistory.value = []
   currentOptions.value = []
+  displayedOptions.value = []
   currentCorrectOptionId.value = ''
   finalReport.value = null
   lastJudge.value = ''
