@@ -15,7 +15,7 @@
             <div class="result-outcome-summary">
               <img
                 class="result-outcome-sticker"
-                :class="{ 'result-outcome-sticker-success': isSuccessOutcome }"
+                :class="{ 'result-outcome-sticker-wobble': true }"
                 :src="resultOutcomeStickerImage"
                 alt=""
               />
@@ -53,6 +53,7 @@
             <span v-if="resultStickerFeedbackVisible" class="result-sticker-feedback">woo~</span>
           </button>
         </div>
+
       </div>
     </div>
 
@@ -68,7 +69,7 @@
           <div class="result-outcome-summary">
             <img
               class="result-outcome-sticker"
-              :class="{ 'result-outcome-sticker-success': isSuccessOutcome }"
+              :class="{ 'result-outcome-sticker-wobble': true }"
               :src="resultOutcomeStickerImage"
               alt=""
             />
@@ -492,9 +493,11 @@ function drawImageElement(ctx: CanvasRenderingContext2D, image: HTMLImageElement
   const y = rect.top - rootRect.top
   const computed = window.getComputedStyle(image)
   const transform = computed.transform
+  const objectFit = computed.objectFit || 'fill'
+  const objectPosition = computed.objectPosition || '50% 50%'
 
   if (!transform || transform === 'none') {
-    ctx.drawImage(image, x, y, rect.width, rect.height)
+    drawImageWithObjectFit(ctx, image, x, y, rect.width, rect.height, objectFit, objectPosition)
     return
   }
 
@@ -504,8 +507,62 @@ function drawImageElement(ctx: CanvasRenderingContext2D, image: HTMLImageElement
   ctx.save()
   ctx.translate(x + origin.x, y + origin.y)
   ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f)
-  ctx.drawImage(image, -origin.x, -origin.y, rect.width, rect.height)
+  drawImageWithObjectFit(ctx, image, -origin.x, -origin.y, rect.width, rect.height, objectFit, objectPosition)
   ctx.restore()
+}
+
+function drawImageWithObjectFit(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  dx: number,
+  dy: number,
+  dWidth: number,
+  dHeight: number,
+  objectFit: string,
+  objectPosition: string
+) {
+  const naturalWidth = image.naturalWidth || dWidth
+  const naturalHeight = image.naturalHeight || dHeight
+
+  if (!naturalWidth || !naturalHeight) {
+    ctx.drawImage(image, dx, dy, dWidth, dHeight)
+    return
+  }
+
+  if (objectFit === 'fill') {
+    ctx.drawImage(image, dx, dy, dWidth, dHeight)
+    return
+  }
+
+  const fitMode = objectFit === 'contain' ? 'contain' : 'cover'
+  const scale = fitMode === 'contain'
+    ? Math.min(dWidth / naturalWidth, dHeight / naturalHeight)
+    : Math.max(dWidth / naturalWidth, dHeight / naturalHeight)
+
+  const renderWidth = naturalWidth * scale
+  const renderHeight = naturalHeight * scale
+  const [positionX, positionY] = parseObjectPosition(objectPosition)
+  const offsetX = (dWidth - renderWidth) * positionX
+  const offsetY = (dHeight - renderHeight) * positionY
+
+  ctx.drawImage(image, dx + offsetX, dy + offsetY, renderWidth, renderHeight)
+}
+
+function parseObjectPosition(value: string) {
+  const parts = value.trim().split(/\s+/)
+  const rawX = parts[0] || '50%'
+  const rawY = parts[1] || '50%'
+  return [parseObjectPositionAxis(rawX), parseObjectPositionAxis(rawY)]
+}
+
+function parseObjectPositionAxis(value: string) {
+  if (value === 'left' || value === 'top') return 0
+  if (value === 'center') return 0.5
+  if (value === 'right' || value === 'bottom') return 1
+  if (value.endsWith('%')) {
+    return parseFloat(value) / 100
+  }
+  return 0.5
 }
 
 function drawTextElement(ctx: CanvasRenderingContext2D, element: HTMLElement, rootRect: DOMRect) {

@@ -452,7 +452,7 @@
     font-weight: 600;
   }
 
-  .result-outcome-sticker-success {
+  .result-outcome-sticker-wobble {
     transform-origin: center center;
     will-change: transform;
     animation-name: result-outcome-sticker-success-wobble;
