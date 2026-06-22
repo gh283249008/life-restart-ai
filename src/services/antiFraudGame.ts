@@ -100,7 +100,7 @@ export const SCENARIO_THEMES: ScenarioTheme[] = [
   { id: 'overseas_show', name: '海外场次代购', brief: '跨境票务代购，骗子以海关和税费名义二次收费。' },
   { id: 'sports_event', name: '世界杯赛事', brief: '世界杯、联赛和总决赛等热门场次一票难求，骗子冒充内部渠道或临时放票，诱导先款后票与私下交易。' },
   { id: 'scalper_ticket', name: '黄牛票', brief: '骗子伪装黄牛称有保真票源，诱导脱离平台并追加“加急费”。' },
-  { id: 'fake_platform', name: '假平台/二手买票平台', brief: '骗子发送仿冒票务平台链接，诱导登录并窃取账号和支付信息。' },
+  { id: 'fake_platform', name: '虚假买票平台', brief: '骗子发送仿冒票务平台链接，诱导登录并窃取账号和支付信息。' },
   { id: 'refund_scam', name: '退票诈骗', brief: '骗子冒充客服办理退票退款，诱导提供验证码或进行屏幕共享。' }
 ]
 
@@ -704,11 +704,11 @@ export async function generateRoundPack(
       const regen = await callLLM([
         {
           role: 'system',
-          content: '你是票务反诈回合修复器。只输出合法JSON，不要解释。'
+          content: '你是票务反诈回合修复器。只输出合法JSON，不要解释。严禁生成真实平台名称，严禁生成真实明星姓名。'
         },
         {
           role: 'user',
-          content: `请重新生成第${round}轮回合JSON，要求：1个correct、2个wrong、1个funny；消息1-3条且不重复；不含隐私泄露样例。`
+          content: `请重新生成第${round}轮回合JSON，要求：1个correct、2个wrong、1个funny；消息1-3条且不重复；不含隐私泄露样例；不要输出真实平台名称和真实明星姓名，只能使用“官方平台”“票务平台”“明星”“艺人”等泛化称呼。`
         }
       ], 6000)
 
@@ -774,7 +774,7 @@ export async function generateFinalReport(
   const content = await callLLM([
     {
       role: 'system',
-      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出玩家总结、AI评价和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。'
+      content: '你是反诈游戏结算器。基于整局上下文判断骗子是得逞了还是认输了，并输出玩家总结、AI评价和3条科普建议。严格 JSON。直接输出最终 JSON，不要输出思考过程。严禁生成真实平台名称，严禁生成真实明星姓名。'
     },
     {
       role: 'user',
@@ -787,6 +787,8 @@ export async function generateFinalReport(
 5) 如果结果偏向“得逞了”或出现被骗风险，语气要安慰，强调可补救动作，避免指责。
 6) tips 保持 3 条，内容是强相关反诈提醒。
 7) 禁止脏话、羞辱、冷嘲热讽；不要出现真实姓名或隐私信息。
+8) 严禁出现真实平台名称，只能使用“官方平台”“票务平台”“平台验真”等泛化称呼。
+9) 严禁出现真实明星姓名，只能使用“明星”“艺人”“演出方”等泛化称呼。
 输出：
 {
   "result":"得逞了|认输了",

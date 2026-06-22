@@ -5,17 +5,21 @@
     @click.capture="handleGlobalClick"
     @keydown.capture="handleGlobalKeydown"
   >
-    <main class="phone-stage">
-      <BgmToggle />
+    <main class="phone-stage" :class="{ 'poster-stage': isPosterRoute }">
+      <BgmToggle v-if="!isPosterRoute" />
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import BgmToggle from '@/components/BgmToggle.vue'
 import { playButtonSfx, warmupButtonSfx } from '@/services/uiSfx'
+
+const route = useRoute()
+const isPosterRoute = computed(() => route.name === 'Poster')
 
 function handleGlobalClick(event: MouseEvent) {
   const interactive = getInteractiveTarget(event.target)

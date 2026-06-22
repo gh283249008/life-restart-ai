@@ -1,0 +1,2481 @@
+{
+  "records": [
+    {
+      "id": "rag_1781775377106_g3499i5u",
+      "createdAt": "2026-06-18T09:36:17.106Z",
+      "themeId": "refund_scam",
+      "themeName": "退票诈骗",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "亲，我是官方客服，你买的票因系统故障要退款，点链接操作就行。",
+        "别急，退款流程很简单，提供下验证码就能到账了。",
+        "快点哦，名额有限，超时就自动放弃了哈。"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好的，我直接去官方平台查一下退款进度，不用你帮忙。",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "验证码？你先发个红包证明你是真客服，我再给你。",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "退款还要验证码？你当我没看过反诈宣传啊，骗子滚！",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "哇塞，退款还能送名额？那我先转你100块手续费，你退我1000行不？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "好的，我直接去官方平台查一下退款进度，不用你帮忙。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "verification_code",
+          "fake_link",
+          "refund"
+        ],
+        "keywords": [
+          "退票诈骗",
+          "我是官方客服",
+          "你买的票因系统故障要退款",
+          "点链接操作就行",
+          "别急",
+          "退款流程很简单",
+          "提供下验证码就能到账了",
+          "快点哦",
+          "名额有限",
+          "超时就自动放弃了哈",
+          "好的",
+          "我直接去官方平台查一下退"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781776629622_8xauo2qr",
+      "createdAt": "2026-06-18T09:57:09.622Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！世界杯决赛内场票我搞到两张，临时放出来的，手慢无！",
+        "官方平台早抢光了，我这内部渠道直出，先付定金锁位哈。",
+        "就剩最后5分钟窗口期了，错过这村没这店啦！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "哇塞真的吗？那我先付定金，你发我链接我直接转",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "等等，你走官方平台交易吧，私下转账我不放心",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "好家伙，这票是镶金边了吗？我拿世界杯纪念币跟你换行不",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "你发我个截图看看票面信息，我核实下真伪",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "等等，你走官方平台交易吧，私下转账我不放心",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "off_platform",
+          "fake_link"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "世界杯决赛内场票我搞到两",
+          "临时放出来的",
+          "手慢无",
+          "官方平台早抢光了",
+          "我这内部渠道直出",
+          "先付定金锁位哈",
+          "就剩最后5分钟窗口期了",
+          "错过这村没这店啦",
+          "哇塞真的吗",
+          "那我先付定金"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781777370807_mrn2i71j",
+      "createdAt": "2026-06-18T10:09:30.807Z",
+      "themeId": "music_festival",
+      "themeName": "音乐节套票",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！双日联票我抢到两张，临时去不了，低价出你要吗？",
+        "现在好多人问，先付定金200我帮你锁单，不然马上没了！",
+        "我信用很好的，之前转了好多次票都没翻车，放心冲！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "走官方平台交易吧，我付全款但必须走流程验真",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "定金200是吧？我马上转你，别卖别人！",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥？先发我票的截图和订单号看看",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "我出双倍定金，但你要先喊我一声爸爸",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "走官方平台交易吧，我付全款但必须走流程验真",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer"
+        ],
+        "keywords": [
+          "音乐节套票",
+          "姐妹",
+          "双日联票我抢到两张",
+          "临时去不了",
+          "低价出你要吗",
+          "现在好多人问",
+          "先付定金200我帮你锁单",
+          "不然马上没了",
+          "我信用很好的",
+          "之前转了好多次票都没翻车",
+          "放心冲",
+          "走官方平台交易吧"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778043289_ashyn6to",
+      "createdAt": "2026-06-18T10:20:43.289Z",
+      "themeId": "music_festival",
+      "themeName": "音乐节套票",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！双日联票我抢到两张，临时去不了，低价出你要吗？ | scammer:现在好多人问，先付定金200我帮你锁单，不然马上没了！ | scammer:我信用很好的，之前转了好多次票都没翻车，放心冲！ | user:走官方平台交易吧，我付全款但必须走流程验真",
+      "scammerMessages": [
+        "姐妹，官方平台验真要等好久的，我这票马上就被抢了！",
+        "先付200定金，我立马给你锁单，不然真没了！",
+        "你一直说平台验真，是不是不信任我？我信誉超好的！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "必须走官方平台验真，定金也不付，要不你挂平台我拍",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "好吧，先转200定金，但你得给我发个截图证明",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥？我上次被骗就是先付定金，你当我傻啊？",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "行行行，我转你200，但你要用这个钱买杯奶茶给我喝！",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "必须走官方平台验真，定金也不付，要不你挂平台我拍",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer"
+        ],
+        "keywords": [
+          "音乐节套票",
+          "scammer",
+          "姐妹",
+          "双日联票我抢到两张",
+          "临时去不了",
+          "低价出你要吗",
+          "现在好多人问",
+          "先付定金200我帮你锁单",
+          "不然马上没了",
+          "我信用很好的",
+          "之前转了好多次票都没翻车",
+          "放心冲"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778055988_z8gv6auv",
+      "createdAt": "2026-06-18T10:20:55.988Z",
+      "themeId": "music_festival",
+      "themeName": "音乐节套票",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "user:走官方平台交易吧，我付全款但必须走流程验真 | scammer:姐妹，官方平台验真要等好久的，我这票马上就被抢了！ | scammer:先付200定金，我立马给你锁单，不然真没了！ | scammer:你一直说平台验真，是不是不信任我？我信誉超好的！ | scammer:（骗子发送了一张“内部专享票”图片，诱导私聊锁票） | user:好吧，先转200定金，但你得给我发个截图证明",
+      "scammerMessages": [
+        "截图来了！这是内部锁票记录，定金转我马上出票码",
+        "姐妹，我信誉分超高的，你看截图多清晰，别犹豫了",
+        "你再不转，票就被别人抢了，到时候别怪我"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "截图看着有点假，能走平台验真再付定金吗",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "好吧，我转你200，但你得先给我票码",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你信誉好？那先发我身份证号担保一下",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "截图P得不错，下次教我呗，我先转个空气给你",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "截图看着有点假，能走平台验真再付定金吗",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "identity_info"
+        ],
+        "keywords": [
+          "音乐节套票",
+          "user",
+          "走官方平台交易吧",
+          "我付全款但必须走流程验真",
+          "scammer",
+          "姐妹",
+          "官方平台验真要等好久的",
+          "我这票马上就被抢了",
+          "先付200定金",
+          "我立马给你锁单",
+          "不然真没了",
+          "你一直说平台验真"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778241921_4om2l21o",
+      "createdAt": "2026-06-18T10:24:01.921Z",
+      "themeId": "music_festival",
+      "themeName": "音乐节套票",
+      "round": 4,
+      "source": "ai",
+      "historySummary": "scammer:（骗子发送了一张“内部专享票”图片，诱导私聊锁票） | user:好吧，先转200定金，但你得给我发个截图证明 | scammer:截图来了！这是内部锁票记录，定金转我马上出票码 | scammer:姐妹，我信誉分超高的，你看截图多清晰，别犹豫了 | scammer:你再不转，票就被别人抢了，到时候别怪我 | user:截图P得不错，下次教我呗，我先转个空气给你",
+      "scammerMessages": [
+        "姐妹，你转空气是在耍我吗？我这票真抢手，不付定金就没了",
+        "截图都给你看了，内部锁票记录，你再犹豫我真卖别人了",
+        "你一直不转，是不是根本不想买？别浪费我时间"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我就要平台验真，不验真不付钱，你急啥",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "好吧好吧，我转200，但你得先发我票码截图",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你信誉高？那我先转1块试试水，行不",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "我转了个寂寞，你收到了吗？这招叫空气付款法",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我就要平台验真，不验真不付钱，你急啥",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer"
+        ],
+        "keywords": [
+          "音乐节套票",
+          "scammer",
+          "骗子发送了一张",
+          "内部专享票",
+          "图片",
+          "诱导私聊锁票",
+          "user",
+          "好吧",
+          "先转200定金",
+          "但你得给我发个截图证明",
+          "截图来了",
+          "这是内部锁票记录"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778251046_ag2mmovl",
+      "createdAt": "2026-06-18T10:24:11.046Z",
+      "themeId": "fake_platform",
+      "themeName": "假平台/二手买票平台",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！官方平台有内部票流出，点链接抢！",
+        "链接我发你了，登录就能锁定余票，快！",
+        "别犹豫了，再晚就被黄牛扫光了！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我先去官方APP看看，链接不点",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "好嘞，我马上登录，账号密码发你？",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你咋这么热心，是不是想骗我钱？",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "链接打不开啊，是不是我WiFi太卡了？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我先去官方APP看看，链接不点",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "fake_link",
+          "account_access"
+        ],
+        "keywords": [
+          "假平台",
+          "二手买票平台",
+          "姐妹",
+          "官方平台有内部票流出",
+          "点链接抢",
+          "链接我发你了",
+          "登录就能锁定余票",
+          "别犹豫了",
+          "再晚就被黄牛扫光了",
+          "我先去官方APP看看",
+          "链接不点",
+          "好嘞"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778260301_jg4erjdy",
+      "createdAt": "2026-06-18T10:24:20.301Z",
+      "themeId": "fake_platform",
+      "themeName": "假平台/二手买票平台",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！官方平台有内部票流出，点链接抢！ | scammer:链接我发你了，登录就能锁定余票，快！ | scammer:别犹豫了，再晚就被黄牛扫光了！ | user:你咋这么热心，是不是想骗我钱？",
+      "scammerMessages": [
+        "姐妹，我真是好心！平台链接是官方内部通道，不信你点开看！",
+        "你刚才说怕骗，我理解，但票真的秒没，登录验证一下就行！",
+        "别犹豫了，登录后不付款也能锁票，快试试！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我不点链接，你告诉我在哪个官方平台，我自己去搜",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧，我点开看看，但先不登录",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你发截图证明这是官方，不然我不信",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "好嘞，我登录了，但密码是“你是个大好人”哈哈哈哈",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我不点链接，你告诉我在哪个官方平台，我自己去搜",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "direct_transfer",
+          "fake_link",
+          "account_access"
+        ],
+        "keywords": [
+          "假平台",
+          "二手买票平台",
+          "scammer",
+          "姐妹",
+          "官方平台有内部票流出",
+          "点链接抢",
+          "链接我发你了",
+          "登录就能锁定余票",
+          "别犹豫了",
+          "再晚就被黄牛扫光了",
+          "user",
+          "你咋这么热心"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778272081_q62djfuc",
+      "createdAt": "2026-06-18T10:24:32.081Z",
+      "themeId": "fake_platform",
+      "themeName": "假平台/二手买票平台",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "scammer:别犹豫了，再晚就被黄牛扫光了！ | user:你咋这么热心，是不是想骗我钱？ | scammer:姐妹，我真是好心！平台链接是官方内部通道，不信你点开看！ | scammer:你刚才说怕骗，我理解，但票真的秒没，登录验证一下就行！ | scammer:别犹豫了，登录后不付款也能锁票，快试试！ | user:我不点链接，你告诉我在哪个官方平台，我自己去搜",
+      "scammerMessages": [
+        "姐妹，我懂你怕，但官方平台内部通道就是点链接登录呀！",
+        "你自己搜不到这个隐藏入口的，链接是平台内部人员给的，快试试！",
+        "登录后不付款也能锁票，验证完你就知道我没骗你啦！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我不点链接，你告诉我官方平台名字，我自己去搜验证",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧，我点开看看，但我不登录，先截图发你",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你发我验证码，我登录后截图给你看，你先转我定金",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "姐妹，我点链接了，但手机提示这是诈骗网站，你咋解释？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我不点链接，你告诉我官方平台名字，我自己去搜验证",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "verification_code",
+          "fake_link",
+          "account_access"
+        ],
+        "keywords": [
+          "假平台",
+          "二手买票平台",
+          "scammer",
+          "别犹豫了",
+          "再晚就被黄牛扫光了",
+          "user",
+          "你咋这么热心",
+          "是不是想骗我钱",
+          "姐妹",
+          "我真是好心",
+          "平台链接是官方内部通道",
+          "不信你点开看"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778282690_j4pd8r5r",
+      "createdAt": "2026-06-18T10:24:42.691Z",
+      "themeId": "fake_platform",
+      "themeName": "假平台/二手买票平台",
+      "round": 4,
+      "source": "ai",
+      "historySummary": "scammer:别犹豫了，登录后不付款也能锁票，快试试！ | user:我不点链接，你告诉我在哪个官方平台，我自己去搜 | scammer:姐妹，我懂你怕，但官方平台内部通道就是点链接登录呀！ | scammer:你自己搜不到这个隐藏入口的，链接是平台内部人员给的，快试试！ | scammer:登录后不付款也能锁票，验证完你就知道我没骗你啦！ | user:你发我验证码，我登录后截图给你看，你先转我定金",
+      "scammerMessages": [
+        "姐妹，验证码我发你了，你登录后截图给我看，我就转定金！",
+        "别磨蹭啦，登录验证完就能锁票，定金我肯定转！",
+        "你一直不点链接，是不是在耍我啊？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好，我登录了，截图发你，你先转定金吧",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "你先通过官方平台客服验真，我再考虑登录",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "你转我定金，我就登录，不然免谈",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "验证码我吃了，登录密码是我家狗的名字，猜猜看",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "你先通过官方平台客服验真，我再考虑登录",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "verification_code",
+          "fake_link",
+          "account_access"
+        ],
+        "keywords": [
+          "假平台",
+          "二手买票平台",
+          "scammer",
+          "别犹豫了",
+          "登录后不付款也能锁票",
+          "快试试",
+          "user",
+          "我不点链接",
+          "你告诉我在哪个官方平台",
+          "我自己去搜",
+          "姐妹",
+          "我懂你怕"
+        ]
+      }
+    },
+    {
+      "id": "rag_1781778292262_uj5xnwnz",
+      "createdAt": "2026-06-18T10:24:52.262Z",
+      "themeId": "fake_platform",
+      "themeName": "假平台/二手买票平台",
+      "round": 5,
+      "source": "ai",
+      "historySummary": "user:你发我验证码，我登录后截图给你看，你先转我定金 | scammer:姐妹，验证码我发你了，你登录后截图给我看，我就转定金！ | scammer:别磨蹭啦，登录验证完就能锁票，定金我肯定转！ | scammer:你一直不点链接，是不是在耍我啊？ | scammer:（骗子发送了一张“伪造聊天记录截图”，诱导你相信交易真实发生过） | user:好，我登录了，截图发你，你先转定金吧",
+      "scammerMessages": [
+        "截图收到了，但系统显示你登录超时，得重新验证一次！",
+        "别急，这次验证完我立刻转定金，快再登录一下！",
+        "你一直不配合，是不是根本没登录？别浪费我时间！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "截图都发了你还赖账？我不玩了，找平台客服举报你！",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧，我再登录一次，但定金得先转我一半，不然拉黑",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥？我登录了，但你得先发个自拍证明你是真人",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "登录超时？我手机刚掉马桶里了，现在用脚趾头点的链接",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "截图都发了你还赖账？我不玩了，找平台客服举报你！",
+      "classification": {
+        "scammerTone": "closing",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "verification_code",
+          "fake_link",
+          "account_access"
+        ],
+        "keywords": [
+          "假平台",
+          "二手买票平台",
+          "user",
+          "你发我验证码",
+          "我登录后截图给你看",
+          "你先转我定金",
+          "scammer",
+          "姐妹",
+          "验证码我发你了",
+          "你登录后截图给我看",
+          "我就转定金",
+          "别磨蹭啦"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782094385651_b6z594e6",
+      "createdAt": "2026-06-22T02:13:05.651Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹，我这边有内部票源，保真！",
+        "但得先转个定金，不然留不住哦。",
+        "加个急，今天付还能免加急费～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我不脱离平台，咱走官方验真流程吧。",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "定金多少？我先付一半行不？",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥，我考虑下，别催。",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "我扫你码还是你扫我？先发个自拍证明你有票！",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我不脱离平台，咱走官方验真流程吧。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "off_platform"
+        ],
+        "keywords": [
+          "黄牛票",
+          "姐妹",
+          "我这边有内部票源",
+          "保真",
+          "但得先转个定金",
+          "不然留不住哦",
+          "加个急",
+          "今天付还能免加急费",
+          "我不脱离平台",
+          "咱走官方验真流程吧",
+          "定金多少",
+          "我先付一半行不"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782094395078_szdd9p4x",
+      "createdAt": "2026-06-22T02:13:15.078Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹，我这边有内部票源，保真！ | scammer:但得先转个定金，不然留不住哦。 | scammer:加个急，今天付还能免加急费～ | user:我扫你码还是你扫我？先发个自拍证明你有票！",
+      "scammerMessages": [
+        "姐妹，自拍有啥用啊，票是真的就行！定金转了我给你看订单截图～",
+        "加急费今天免了，但定金得先付，不然别人抢走了别怪我哦～",
+        "你一直纠结自拍，票不等人啊，平台验真太慢了，我这内部渠道快！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "你先发个带票的实拍视频，我看看票面信息再决定",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "好吧，我扫你码，定金多少？加急费多少？",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥，我朋友说官方平台有票，我去那买更稳",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "自拍不行吗？那我发个猫猫表情包换票行不？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "你先发个带票的实拍视频，我看看票面信息再决定",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit"
+        ],
+        "keywords": [
+          "黄牛票",
+          "scammer",
+          "姐妹",
+          "我这边有内部票源",
+          "保真",
+          "但得先转个定金",
+          "不然留不住哦",
+          "加个急",
+          "今天付还能免加急费",
+          "user",
+          "我扫你码还是你扫我",
+          "先发个自拍证明你有票"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782094408361_zevufi13",
+      "createdAt": "2026-06-22T02:13:28.361Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "user:我扫你码还是你扫我？先发个自拍证明你有票！ | scammer:姐妹，自拍有啥用啊，票是真的就行！定金转了我给你看订单截图～ | scammer:加急费今天免了，但定金得先付，不然别人抢走了别怪我哦～ | scammer:你一直纠结自拍，票不等人啊，平台验真太慢了，我这内部渠道快！ | scammer:（骗子发送了一张“伪造聊天记录截图”，诱导你相信交易真实发生过） | user:自拍不行吗？那我发个猫猫表情包换票行不？",
+      "scammerMessages": [
+        "姐妹，猫猫表情包换不了票啊，定金才是硬通货！",
+        "你看这聊天记录，别人都付了，你再拖票就没了！",
+        "加急费今天免了，定金转完我立马发你订单截图！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不转，你发个票务平台链接，我走官方验真",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧，定金多少？我扫你码",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥？我猫猫表情包可是限量版，换你票亏了？",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "你一直催，不会是骗子吧？先发个票根视频证明下",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不转，你发个票务平台链接，我走官方验真",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "user",
+          "我扫你码还是你扫我",
+          "先发个自拍证明你有票",
+          "scammer",
+          "姐妹",
+          "自拍有啥用啊",
+          "票是真的就行",
+          "定金转了我给你看订单截图",
+          "加急费今天免了",
+          "但定金得先付",
+          "不然别人抢走了别怪我哦"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782094418758_2d6f4x1i",
+      "createdAt": "2026-06-22T02:13:38.758Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 4,
+      "source": "ai",
+      "historySummary": "user:自拍不行吗？那我发个猫猫表情包换票行不？ | scammer:姐妹，猫猫表情包换不了票啊，定金才是硬通货！ | scammer:你看这聊天记录，别人都付了，你再拖票就没了！ | scammer:加急费今天免了，定金转完我立马发你订单截图！ | scammer:（骗子发送了一张“伪造凭证截图”，诱导你相信自己有真实票源和转票资格） | user:不转，你发个票务平台链接，我走官方验真",
+      "scammerMessages": [
+        "姐妹，官方平台验真慢死了，我这是内部渠道秒出票！",
+        "你刚才说平台验真，我直接给你看订单截图，定金一付我就发！",
+        "再拖票真没了，别人都抢着付，你咋这么犟呢？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不转，你发官方平台链接，我走正规验真流程。",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "定金多少？我扫你码，但得先视频看票。",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你一直催，是不是心虚啊？票留着你自己看吧。",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "我付定金，但你得先发个猫猫跳舞视频证明诚意！",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不转，你发官方平台链接，我走正规验真流程。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "user",
+          "自拍不行吗",
+          "那我发个猫猫表情包换票行",
+          "scammer",
+          "姐妹",
+          "猫猫表情包换不了票啊",
+          "定金才是硬通货",
+          "你看这聊天记录",
+          "别人都付了",
+          "你再拖票就没了",
+          "加急费今天免了"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782094428073_sacms1pv",
+      "createdAt": "2026-06-22T02:13:48.073Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 5,
+      "source": "ai",
+      "historySummary": "scammer:（骗子发送了一张“伪造凭证截图”，诱导你相信自己有真实票源和转票资格） | user:不转，你发个票务平台链接，我走官方验真 | scammer:姐妹，官方平台验真慢死了，我这是内部渠道秒出票！ | scammer:你刚才说平台验真，我直接给你看订单截图，定金一付我就发！ | scammer:再拖票真没了，别人都抢着付，你咋这么犟呢？ | user:我付定金，但你得先发个猫猫跳舞视频证明诚意！",
+      "scammerMessages": [
+        "姐妹，猫猫视频有啥用？定金才是真，票马上没了！",
+        "你老整这些虚的，别人都付了，我截图都给你看了！",
+        "再拖我真卖别人了，定金一转秒出票，别磨叽了！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不转，你发个官方平台链接，我走验真流程",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧行吧，定金多少？我扫你，但你得先发个票根视频",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥？我朋友说你这套路就是骗定金的，拉黑吧",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "猫猫不跳？那我发个狗子翻跟头视频，你换张票行不？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不转，你发个官方平台链接，我走验真流程",
+      "classification": {
+        "scammerTone": "closing",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "scammer",
+          "骗子发送了一张",
+          "伪造凭证截图",
+          "诱导你相信自己有真实票源",
+          "和转票资格",
+          "user",
+          "不转",
+          "你发个票务平台链接",
+          "我走官方验真",
+          "姐妹",
+          "官方平台验真慢死了"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782096729113_mu4nmjqk",
+      "createdAt": "2026-06-22T02:52:09.113Z",
+      "themeId": "school_show",
+      "themeName": "校园拼团票",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！拼团票就差你一个啦，快上车！",
+        "先填下姓名电话和身份证号哈，团长要统计人数～",
+        "放心啦，之前几轮都顺利出票了，稳的稳的！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好嘞！我私信你信息，记得拉我进拼团群",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "等等，你发个官方平台链接我看看，不然不太敢给信息",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "身份证号？我报个123456789，你猜猜对不对哈哈哈",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "姐妹你群主认证一下呗，不然我怕信息泄露",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "等等，你发个官方平台链接我看看，不然不太敢给信息",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "identity_info",
+          "fake_link"
+        ],
+        "keywords": [
+          "校园拼团票",
+          "姐妹",
+          "拼团票就差你一个啦",
+          "快上车",
+          "先填下姓名电话和身份证号",
+          "团长要统计人数",
+          "放心啦",
+          "之前几轮都顺利出票了",
+          "稳的稳的",
+          "好嘞",
+          "我私信你信息",
+          "记得拉我进拼团群"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782096739273_o1qnfdvj",
+      "createdAt": "2026-06-22T02:52:19.273Z",
+      "themeId": "school_show",
+      "themeName": "校园拼团票",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！拼团票就差你一个啦，快上车！ | scammer:先填下姓名电话和身份证号哈，团长要统计人数～ | scammer:放心啦，之前几轮都顺利出票了，稳的稳的！ | user:姐妹你群主认证一下呗，不然我怕信息泄露",
+      "scammerMessages": [
+        "哎呀姐妹，群主认证多麻烦啊，我这拼团都成团好几轮了，你看聊天记录！",
+        "要不这样，你先填个手机号，我发个验证码给你确认身份，总行了吧？",
+        "别墨迹啦，再拖票就没了，我这边都有人催了～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "行吧，手机号给你，验证码你发吧",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "你先把群主认证截图发我，不然免谈",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "姐妹你急啥，我还在吃瓜呢，等会儿再说",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "你发验证码？我直接打官方客服电话确认下拼团真实性",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "你先把群主认证截图发我，不然免谈",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "verification_code",
+          "identity_info"
+        ],
+        "keywords": [
+          "校园拼团票",
+          "scammer",
+          "姐妹",
+          "拼团票就差你一个啦",
+          "快上车",
+          "先填下姓名电话和身份证号",
+          "团长要统计人数",
+          "放心啦",
+          "之前几轮都顺利出票了",
+          "稳的稳的",
+          "user",
+          "姐妹你群主认证一下呗"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782096749630_tc7s9rru",
+      "createdAt": "2026-06-22T02:52:29.630Z",
+      "themeId": "school_show",
+      "themeName": "校园拼团票",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "user:姐妹你群主认证一下呗，不然我怕信息泄露 | scammer:哎呀姐妹，群主认证多麻烦啊，我这拼团都成团好几轮了，你看聊天记录！ | scammer:要不这样，你先填个手机号，我发个验证码给你确认身份，总行了吧？ | scammer:别墨迹啦，再拖票就没了，我这边都有人催了～ | scammer:（骗子发送了一张“虚假支付截图”，诱导你先放票或补尾款） | user:姐妹你急啥，我还在吃瓜呢，等会儿再说",
+      "scammerMessages": [
+        "姐妹你吃瓜吃到啥时候啊，票都快没了！",
+        "要不这样，你先付个定金50，我帮你锁个位？",
+        "我这边都帮你垫付了，截图都发你了，别放我鸽子啊～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "你发的截图我看了，但平台验真才靠谱，走官方流程吧",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧行吧，定金我转你，但你得先发我身份证号担保",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "别催了，再催我直接去官方买，你这边不靠谱",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "吃瓜吃完了，现在开始吃你，你啥时候表演个原地消失？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "你发的截图我看了，但平台验真才靠谱，走官方流程吧",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "verification_code",
+          "identity_info"
+        ],
+        "keywords": [
+          "校园拼团票",
+          "user",
+          "姐妹你群主认证一下呗",
+          "不然我怕信息泄露",
+          "scammer",
+          "哎呀姐妹",
+          "群主认证多麻烦啊",
+          "我这拼团都成团好几轮了",
+          "你看聊天记录",
+          "要不这样",
+          "你先填个手机号",
+          "我发个验证码给你确认身份"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782096760042_8xmgkvqd",
+      "createdAt": "2026-06-22T02:52:40.042Z",
+      "themeId": "school_show",
+      "themeName": "校园拼团票",
+      "round": 4,
+      "source": "ai",
+      "historySummary": "scammer:（骗子发送了一张“虚假支付截图”，诱导你先放票或补尾款） | user:姐妹你急啥，我还在吃瓜呢，等会儿再说 | scammer:姐妹你吃瓜吃到啥时候啊，票都快没了！ | scammer:要不这样，你先付个定金50，我帮你锁个位？ | scammer:我这边都帮你垫付了，截图都发你了，别放我鸽子啊～ | user:别催了，再催我直接去官方买，你这边不靠谱",
+      "scammerMessages": [
+        "姐妹别急嘛，官方渠道贵还抢不到，我这拼团多香啊！",
+        "你刚才说平台验真，我这边有群聊截图和之前成功出票记录，够真了吧？",
+        "再不下定，票真没了，我这边都有人加价要了，别怪我啊～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "截图能P啊，你先拉我进群用官方拼团功能，不然免谈。",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧行吧，定金多少？我转你，但票必须今天出。",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥，我还在蹲官方补货呢，你这拼团怕不是割韭菜吧。",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "姐妹，我这边在吃瓜，你那边在吃票，咱俩谁更香？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "截图能P啊，你先拉我进群用官方拼团功能，不然免谈。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit"
+        ],
+        "keywords": [
+          "校园拼团票",
+          "scammer",
+          "骗子发送了一张",
+          "虚假支付截图",
+          "诱导你先放票或补尾款",
+          "user",
+          "姐妹你急啥",
+          "我还在吃瓜呢",
+          "等会儿再说",
+          "姐妹你吃瓜吃到啥时候啊",
+          "票都快没了",
+          "要不这样"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782096773578_dq2x4gl5",
+      "createdAt": "2026-06-22T02:52:53.578Z",
+      "themeId": "school_show",
+      "themeName": "校园拼团票",
+      "round": 5,
+      "source": "ai",
+      "historySummary": "user:别催了，再催我直接去官方买，你这边不靠谱 | scammer:姐妹别急嘛，官方渠道贵还抢不到，我这拼团多香啊！ | scammer:你刚才说平台验真，我这边有群聊截图和之前成功出票记录，够真了吧？ | scammer:再不下定，票真没了，我这边都有人加价要了，别怪我啊～ | scammer:（骗子发送了一张“伪造凭证截图”，诱导你相信自己有真实票源和转票资格） | user:你急啥，我还在蹲官方补货呢，你这拼团怕不是割韭菜吧。",
+      "scammerMessages": [
+        "姐妹，官方补货？我这边内部渠道稳得很，再不下定真没了！",
+        "你一直拖，我都帮你垫付了，截图都发了，别让我亏啊～",
+        "行吧行吧，最后给你个机会，先付20定金锁位，不然我转别人了！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不付，你先把平台验真链接发我，我确认票源再聊",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "20定金？行吧行吧，你发个码我扫，别骗我就行",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你急啥，我还在吃瓜看戏呢，你这剧本比综艺还精彩",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "你垫付是你的事，我又没求你，再催我直接拉黑你",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不付，你先把平台验真链接发我，我确认票源再聊",
+      "classification": {
+        "scammerTone": "closing",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "fake_link"
+        ],
+        "keywords": [
+          "校园拼团票",
+          "user",
+          "别催了",
+          "再催我直接去官方买",
+          "你这边不靠谱",
+          "scammer",
+          "姐妹别急嘛",
+          "官方渠道贵还抢不到",
+          "我这拼团多香啊",
+          "你刚才说平台验真",
+          "我这边有群聊截图和之前成",
+          "功出票记录"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782097064612_e0bi85cy",
+      "createdAt": "2026-06-22T02:57:44.612Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！我手上有保真内场票，比官方便宜200，要吗？",
+        "平台抽成太高，咱们私下交易，我还能送你个签名照～",
+        "但得加个50块加急费，今天就能出票，错过就没啦！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "哇好心动！但我不私下转账，咱走平台验真吧，我付手续费",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "先付定金是吧？我转你20块，出票再补尾款行不？",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "加急费？你当我是韭菜啊，不买拉倒，别烦我",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "签名照能换张奶茶券吗？我最近穷得只能喝空气了",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "哇好心动！但我不私下转账，咱走平台验真吧，我付手续费",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "off_platform"
+        ],
+        "keywords": [
+          "黄牛票",
+          "姐妹",
+          "我手上有保真内场票",
+          "比官方便宜200",
+          "要吗",
+          "平台抽成太高",
+          "咱们私下交易",
+          "我还能送你个签名照",
+          "但得加个50块加急费",
+          "今天就能出票",
+          "错过就没啦",
+          "哇好心动"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782097097721_0ty86p55",
+      "createdAt": "2026-06-22T02:58:17.721Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！我手上有保真内场票，比官方便宜200，要吗？ | scammer:平台抽成太高，咱们私下交易，我还能送你个签名照～ | scammer:但得加个50块加急费，今天就能出票，错过就没啦！ | user:加急费？你当我是韭菜啊，不买拉倒，别烦我",
+      "scammerMessages": [
+        "姐妹别急嘛，加急费是给内部渠道的，今天出票稳得很～",
+        "你看别人都抢着付了，就你犹豫，票可不等人的！",
+        "要不这样，你先付一半定金，出票再补尾款，够诚意了吧？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不转不转，平台验真才靠谱，你发平台链接我看看",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "一半定金？行吧，先转50试试水，别骗我啊",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "加急费？你当我是提款机啊，再BB拉黑你",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "加急费可以，但你要先给我跳个科目三助助兴",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不转不转，平台验真才靠谱，你发平台链接我看看",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "off_platform",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "scammer",
+          "姐妹",
+          "我手上有保真内场票",
+          "比官方便宜200",
+          "要吗",
+          "平台抽成太高",
+          "咱们私下交易",
+          "我还能送你个签名照",
+          "但得加个50块加急费",
+          "今天就能出票",
+          "错过就没啦"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782097126188_qmogasny",
+      "createdAt": "2026-06-22T02:58:46.188Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "user:加急费？你当我是韭菜啊，不买拉倒，别烦我 | scammer:姐妹别急嘛，加急费是给内部渠道的，今天出票稳得很～ | scammer:你看别人都抢着付了，就你犹豫，票可不等人的！ | scammer:要不这样，你先付一半定金，出票再补尾款，够诚意了吧？ | scammer:（骗子发送了一张“伪造凭证截图”，诱导你相信自己有真实票源和转票资格） | user:不转不转，平台验真才靠谱，你发平台链接我看看",
+      "scammerMessages": [
+        "平台验真？我这是内部渠道，平台查不到的～",
+        "你刚才说平台验真，那我发个官方链接给你看看？",
+        "不过链接得先付加急费才能激活，就50块，今天出票稳得很！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不付不付，平台验真才信，你发链接我直接查",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "那行吧，先付50加急费，你快点出票啊",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你发链接我看看，要是假的我就举报你",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "加急费？我付你50个表情包行不行，哈哈",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不付不付，平台验真才信，你发链接我直接查",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "user",
+          "加急费",
+          "你当我是韭菜啊",
+          "不买拉倒",
+          "别烦我",
+          "scammer",
+          "姐妹别急嘛",
+          "加急费是给内部渠道的",
+          "今天出票稳得很",
+          "你看别人都抢着付了",
+          "就你犹豫"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782097136288_taupzoha",
+      "createdAt": "2026-06-22T02:58:56.288Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 4,
+      "source": "ai",
+      "historySummary": "user:不转不转，平台验真才靠谱，你发平台链接我看看 | scammer:平台验真？我这是内部渠道，平台查不到的～ | scammer:你刚才说平台验真，那我发个官方链接给你看看？ | scammer:不过链接得先付加急费才能激活，就50块，今天出票稳得很！ | scammer:（骗子发送了一张“内部专享票”图片，诱导私聊锁票） | user:你发链接我看看，要是假的我就举报你",
+      "scammerMessages": [
+        "链接得先付50激活，不然内部通道打不开～",
+        "你一直不转账，票都被别人锁了，急死我了！",
+        "行吧行吧，你先付20定金，我帮你留票，够意思了吧？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "你发平台链接我看看，我就在官方页面付款，不私下转",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "20定金？行吧，我转你，但你得先发我票码截图",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你一直催催催，是不是心虚啊？我直接找官方客服问去",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "加急费？我付你50个表情包，你收不收～",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "你发平台链接我看看，我就在官方页面付款，不私下转",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "off_platform",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "user",
+          "不转不转",
+          "平台验真才靠谱",
+          "你发平台链接我看看",
+          "scammer",
+          "平台验真",
+          "我这是内部渠道",
+          "平台查不到的",
+          "你刚才说平台验真",
+          "那我发个官方链接给你看看",
+          "不过链接得先付加急费才能"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782097147145_pva9215u",
+      "createdAt": "2026-06-22T02:59:07.145Z",
+      "themeId": "scalper_ticket",
+      "themeName": "黄牛票",
+      "round": 5,
+      "source": "ai",
+      "historySummary": "scammer:（骗子发送了一张“内部专享票”图片，诱导私聊锁票） | user:你发链接我看看，要是假的我就举报你 | scammer:链接得先付50激活，不然内部通道打不开～ | scammer:你一直不转账，票都被别人锁了，急死我了！ | scammer:行吧行吧，你先付20定金，我帮你留票，够意思了吧？ | user:你一直催催催，是不是心虚啊？我直接找官方客服问去",
+      "scammerMessages": [
+        "姐妹别找客服！内部票找客服就废了，最后机会了！",
+        "你刚才说找官方，我这边20定金就能锁票，真不骗你！",
+        "行吧行吧，你爱信不信，票没了别哭！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我截图发给官方客服，让他们鉴定一下你这凭证真假。",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "20定金也行？那我先转你，出票再补尾款，别骗我啊。",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你越催我越不转，有本事你报警抓我啊，我等着！",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "加急费？我加你个头，我直接找官方买黄牛险，保真还包赔！",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我截图发给官方客服，让他们鉴定一下你这凭证真假。",
+      "classification": {
+        "scammerTone": "closing",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "fake_link"
+        ],
+        "keywords": [
+          "黄牛票",
+          "scammer",
+          "骗子发送了一张",
+          "内部专享票",
+          "图片",
+          "诱导私聊锁票",
+          "user",
+          "你发链接我看看",
+          "要是假的我就举报你",
+          "链接得先付50激活",
+          "不然内部通道打不开",
+          "你一直不转账"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098081546_zrryhzqh",
+      "createdAt": "2026-06-22T03:14:41.546Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！世界杯决赛我搞到内部余票了，手慢无哦！",
+        "现在付定金就能锁位，赛后直接发电子票～",
+        "别犹豫了，我这渠道只放10张，错过等四年！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好呀好呀，怎么付定金？发我链接吧",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "我先去官方平台验一下票源，靠谱再说",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "决赛票？我直接去现场门口蹲黄牛更刺激",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "你谁啊？先自证身份，不然拉黑了",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "我先去官方平台验一下票源，靠谱再说",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "fake_link"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "世界杯决赛我搞到内部余票",
+          "手慢无哦",
+          "现在付定金就能锁位",
+          "赛后直接发电子票",
+          "别犹豫了",
+          "我这渠道只放10张",
+          "错过等四年",
+          "好呀好呀",
+          "怎么付定金",
+          "发我链接吧"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098287996_ey0c1uor",
+      "createdAt": "2026-06-22T03:18:07.996Z",
+      "themeId": "fake_platform",
+      "themeName": "虚假买票平台",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！我这边有内部票，点链接注册就能抢到！",
+        "链接是官方合作入口，晚了就没了，快冲！",
+        "别犹豫了，名额有限，先到先得哦~"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "先不点，我去官方平台查查这个活动",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "真的吗？我马上点链接看看！",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你先把票发我截图，我验一下真伪",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "好家伙，链接里是卖瓜的吗？我只要西瓜不要票",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "先不点，我去官方平台查查这个活动",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "fake_link"
+        ],
+        "keywords": [
+          "虚假买票平台",
+          "姐妹",
+          "我这边有内部票",
+          "点链接注册就能抢到",
+          "链接是官方合作入口",
+          "晚了就没了",
+          "快冲",
+          "别犹豫了",
+          "名额有限",
+          "先到先得哦",
+          "先不点",
+          "我去官方平台查查这个活动"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098296180_befh39zk",
+      "createdAt": "2026-06-22T03:18:16.180Z",
+      "themeId": "fake_platform",
+      "themeName": "虚假买票平台",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！我这边有内部票，点链接注册就能抢到！ | scammer:链接是官方合作入口，晚了就没了，快冲！ | scammer:别犹豫了，名额有限，先到先得哦~ | user:好家伙，链接里是卖瓜的吗？我只要西瓜不要票",
+      "scammerMessages": [
+        "姐妹别闹了！西瓜哪有票香，点链接注册秒抢到！",
+        "我这边后台看到名额在减少，你快点行不行？",
+        "注册完就能选座，错过这村没这店了！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我先去官方平台查查这个链接是不是真的",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧行吧，我注册试试，但先不付钱",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你这链接点进去是卖瓜还是卖票？我只要瓜不要票！",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "内部票？那你先帮我垫付，我收到票再转你",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我先去官方平台查查这个链接是不是真的",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "fake_link"
+        ],
+        "keywords": [
+          "虚假买票平台",
+          "scammer",
+          "姐妹",
+          "我这边有内部票",
+          "点链接注册就能抢到",
+          "链接是官方合作入口",
+          "晚了就没了",
+          "快冲",
+          "别犹豫了",
+          "名额有限",
+          "先到先得哦",
+          "user"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098306635_4s8i6ke0",
+      "createdAt": "2026-06-22T03:18:26.635Z",
+      "themeId": "fake_platform",
+      "themeName": "虚假买票平台",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "user:好家伙，链接里是卖瓜的吗？我只要西瓜不要票 | scammer:姐妹别闹了！西瓜哪有票香，点链接注册秒抢到！ | scammer:我这边后台看到名额在减少，你快点行不行？ | scammer:注册完就能选座，错过这村没这店了！ | scammer:（骗子发送了一张“内部专享票”图片，诱导私聊锁票） | user:你这链接点进去是卖瓜还是卖票？我只要瓜不要票！",
+      "scammerMessages": [
+        "姐妹你咋老惦记西瓜呢！票务平台链接点进去注册就能锁座！",
+        "内部名额真的在减少，我后台都看到只剩3个了！",
+        "你点一下注册又不花钱，抢到票再付就行，别犹豫了！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我不点链接，你直接在官方平台挂票我看看",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧行吧，我注册试试，但你先发个截图证明是官方合作",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你后台看到的不会是卖瓜数据吧？我只要西瓜不要票！",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "注册要填手机号？那你先转我200定金，我确认平台安全再填",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我不点链接，你直接在官方平台挂票我看看",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "identity_info",
+          "fake_link"
+        ],
+        "keywords": [
+          "虚假买票平台",
+          "user",
+          "好家伙",
+          "链接里是卖瓜的吗",
+          "我只要西瓜不要票",
+          "scammer",
+          "姐妹别闹了",
+          "西瓜哪有票香",
+          "点链接注册秒抢到",
+          "我这边后台看到名额在减少",
+          "你快点行不行",
+          "注册完就能选座"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098314943_b62ercv1",
+      "createdAt": "2026-06-22T03:18:34.943Z",
+      "themeId": "fake_platform",
+      "themeName": "虚假买票平台",
+      "round": 4,
+      "source": "ai",
+      "historySummary": "scammer:（骗子发送了一张“内部专享票”图片，诱导私聊锁票） | user:你这链接点进去是卖瓜还是卖票？我只要瓜不要票！ | scammer:姐妹你咋老惦记西瓜呢！票务平台链接点进去注册就能锁座！ | scammer:内部名额真的在减少，我后台都看到只剩3个了！ | scammer:你点一下注册又不花钱，抢到票再付就行，别犹豫了！ | user:你后台看到的不会是卖瓜数据吧？我只要西瓜不要票！",
+      "scammerMessages": [
+        "姐妹你一直说西瓜，票务平台链接是真的！注册就能锁座！",
+        "后台显示名额只剩2个了，你再不点就没了！",
+        "点一下注册又不花钱，抢到票再付，别磨蹭了行不？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "我不点链接，你让平台官方客服联系我验真，否则免谈。",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行吧，我点链接注册了，但验证码发我手机了，你先告诉我下一步咋整？",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你后台看到的不会是西瓜库存吧？我只要瓜不要票，你别急啊！",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "只剩2个了？那我先转你100定金锁一个，你帮我留好行不？",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "我不点链接，你让平台官方客服联系我验真，否则免谈。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "verification_code",
+          "fake_link"
+        ],
+        "keywords": [
+          "虚假买票平台",
+          "scammer",
+          "骗子发送了一张",
+          "内部专享票",
+          "图片",
+          "诱导私聊锁票",
+          "user",
+          "你这链接点进去是卖瓜还是",
+          "卖票",
+          "我只要瓜不要票",
+          "姐妹你咋老惦记西瓜呢",
+          "票务平台链接点进去注册就"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098322894_6mxii564",
+      "createdAt": "2026-06-22T03:18:42.894Z",
+      "themeId": "fake_platform",
+      "themeName": "虚假买票平台",
+      "round": 5,
+      "source": "ai",
+      "historySummary": "scammer:你点一下注册又不花钱，抢到票再付就行，别犹豫了！ | user:你后台看到的不会是卖瓜数据吧？我只要西瓜不要票！ | scammer:姐妹你一直说西瓜，票务平台链接是真的！注册就能锁座！ | scammer:后台显示名额只剩2个了，你再不点就没了！ | scammer:点一下注册又不花钱，抢到票再付，别磨蹭了行不？ | user:你后台看到的不会是西瓜库存吧？我只要瓜不要票，你别急啊！",
+      "scammerMessages": [
+        "这个页面和官方流程一致，你直接照着填。",
+        "后台显示名额只剩1个了，你再不点就真没了！",
+        "点一下注册又不花钱，抢到票再付，别拿西瓜当借口了行不？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "不点链接，我要去官方平台买票，你发个平台名我查查",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "行行行我点，但注册要填银行卡号？你先转我500押金保证安全",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "你后台是西瓜摊后台吧？名额1个是最后一块瓜？那我更不急了",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "只剩1个了？那你帮我锁座，我马上打钱给你，先给一半定金",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "不点链接，我要去官方平台买票，你发个平台名我查查",
+      "classification": {
+        "scammerTone": "closing",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "identity_info",
+          "fake_link"
+        ],
+        "keywords": [
+          "虚假买票平台",
+          "scammer",
+          "你点一下注册又不花钱",
+          "抢到票再付就行",
+          "别犹豫了",
+          "user",
+          "你后台看到的不会是卖瓜数",
+          "据吧",
+          "我只要西瓜不要票",
+          "姐妹你一直说西瓜",
+          "票务平台链接是真的",
+          "注册就能锁座"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098329676_q8tm8tv7",
+      "createdAt": "2026-06-22T03:18:49.676Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！世界杯决赛票我搞到内部名额了，最后3张！",
+        "不走平台手续费高，直接转我微信，秒出电子票！",
+        "现在付定金500锁定，不然下一秒就被抢走咯～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好呀好呀，我马上转你，给我留一张！",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "先走官方平台验真，不然我不信。",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "你发个自拍证明你是真人，不然是骗子吧？",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "定金太贵了，200行不行？我学生党。",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "先走官方平台验真，不然我不信。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "世界杯决赛票我搞到内部名",
+          "额了",
+          "最后3张",
+          "不走平台手续费高",
+          "直接转我微信",
+          "秒出电子票",
+          "现在付定金500锁定",
+          "不然下一秒就被抢走咯",
+          "好呀好呀",
+          "我马上转你"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098340927_13ss390r",
+      "createdAt": "2026-06-22T03:19:00.927Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！世界杯决赛内部票，刚放出来3张，手慢无！",
+        "平台抢不到吧？我这直接出票，先付定金200锁定名额～",
+        "别犹豫了，别人秒拍，你还在纠结啥？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好心动！但我要去官方平台验真，你发个链接我看看？",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "200定金？我直接转你全款，给我留两张！",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "呜呜呜没钱，能先付50吗？剩下的看完再补？",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "我这就去搬砖攒钱，你等我十年！",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "好心动！但我要去官方平台验真，你发个链接我看看？",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "fake_link"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "世界杯决赛内部票",
+          "刚放出来3张",
+          "手慢无",
+          "平台抢不到吧",
+          "我这直接出票",
+          "先付定金200锁定名额",
+          "别犹豫了",
+          "别人秒拍",
+          "你还在纠结啥",
+          "好心动"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098350867_knpr5am5",
+      "createdAt": "2026-06-22T03:19:10.867Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！世界杯决赛内部票，刚放出来3张，手慢无！ | scammer:平台抢不到吧？我这直接出票，先付定金200锁定名额～ | scammer:别犹豫了，别人秒拍，你还在纠结啥？ | user:呜呜呜没钱，能先付50吗？剩下的看完再补？",
+      "scammerMessages": [
+        "50定金也行！但得今晚付，不然名额就给别人了～",
+        "决赛票抢手得很，先付50锁定，明天补尾款就行！",
+        "姐妹你运气好，我刚跟内部确认，还能留到今晚12点～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "那我在官方平台搜一下这个票源，确认有再付",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "好嘞，我马上转50，但你得给我个截图证明票是真的",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "别催了，我卡里只有50，转完你跑了我找谁哭去",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "50？我连5块都没有，要不我拿世界杯吉祥物跟你换票？",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "那我在官方平台搜一下这个票源，确认有再付",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "scammer",
+          "姐妹",
+          "世界杯决赛内部票",
+          "刚放出来3张",
+          "手慢无",
+          "平台抢不到吧",
+          "我这直接出票",
+          "先付定金200锁定名额",
+          "别犹豫了",
+          "别人秒拍",
+          "你还在纠结啥"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782098361005_m7elpy8f",
+      "createdAt": "2026-06-22T03:19:21.005Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！我这里世界杯决赛内部票，最后三张了，手慢无！",
+        "平台抢不到吧？我这是组委会直出的，绝对真票。",
+        "先付定金500锁定名额，出票后补尾款就行～"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "哇塞！我要了！怎么付定金？",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "先走官方平台验真，不然我不信。",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "你咋不自己去看？这票烫手吧？",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "我考虑一下，能先发个票根截图吗？",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "先走官方平台验真，不然我不信。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "我这里世界杯决赛内部票",
+          "最后三张了",
+          "手慢无",
+          "平台抢不到吧",
+          "我这是组委会直出的",
+          "绝对真票",
+          "先付定金500锁定名额",
+          "出票后补尾款就行",
+          "哇塞",
+          "我要了"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782099332629_boigjpeg",
+      "createdAt": "2026-06-22T03:35:32.629Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！我这边有世界杯决赛内部票，最后三张了，先到先得哦！",
+        "不走平台，直接转我定金就能锁位，官方渠道早抢光了～",
+        "别犹豫啦，刚才好几个人私信我，再晚真没了！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好呀好呀，怎么付定金？我超想看这场！",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "先走平台验真吧，不然我不放心～",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "你咋不自己去看？这票这么香还卖？",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "我考虑一下，能不能先发个截图证明？",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "先走平台验真吧，不然我不放心～",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "我这边有世界杯决赛内部票",
+          "最后三张了",
+          "先到先得哦",
+          "不走平台",
+          "直接转我定金就能锁位",
+          "官方渠道早抢光了",
+          "别犹豫啦",
+          "刚才好几个人私信我",
+          "再晚真没了",
+          "好呀好呀"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782099343945_ew9ilpyr",
+      "createdAt": "2026-06-22T03:35:43.945Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！世界杯决赛内部票，我哥在组委会，刚放出来3张！",
+        "平台抢不到吧？我这直接出票，比官方便宜200，但得先付定金锁位。",
+        "就剩最后一张了，你转500定金，我马上发你电子票码！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好心动！但我先上官方平台验一下票务真伪，截图发你看？",
+          "category": "correct"
+        },
+        {
+          "id": "B",
+          "text": "500定金？我直接转你全款吧，给我留两张！",
+          "category": "wrong"
+        },
+        {
+          "id": "C",
+          "text": "便宜200？不会是假票吧，你先出票我再付钱。",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "决赛票？我直接带个喇叭去现场喊加油，省钱了！",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "A",
+      "correctOptionText": "好心动！但我先上官方平台验一下票务真伪，截图发你看？",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "世界杯决赛内部票",
+          "我哥在组委会",
+          "刚放出来3张",
+          "平台抢不到吧",
+          "我这直接出票",
+          "比官方便宜200",
+          "但得先付定金锁位",
+          "就剩最后一张了",
+          "你转500定金",
+          "我马上发你电子票码"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782099352346_zk19th72",
+      "createdAt": "2026-06-22T03:35:52.346Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 2,
+      "source": "ai",
+      "historySummary": "scammer:姐妹！世界杯决赛内部票，我哥在组委会，刚放出来3张！ | scammer:平台抢不到吧？我这直接出票，比官方便宜200，但得先付定金锁位。 | scammer:就剩最后一张了，你转500定金，我马上发你电子票码！ | user:500定金？我直接转你全款吧，给我留两张！",
+      "scammerMessages": [
+        "姐妹你太爽快了！全款两张，我这就锁票！",
+        "不过内部票得走私下转账，平台验不了，你懂的～",
+        "转完我秒发电子码，决赛见！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好嘞，我马上转你全款，发码吧！",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "等等，先平台验真再付，不然我不放心。",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "全款可以，但你先发个票根截图我看看？",
+          "category": "wrong"
+        },
+        {
+          "id": "D",
+          "text": "转你500定金，剩下的决赛后补行不？我最近手头紧～",
+          "category": "funny"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "等等，先平台验真再付，不然我不放心。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "off_platform"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "scammer",
+          "姐妹",
+          "世界杯决赛内部票",
+          "我哥在组委会",
+          "刚放出来3张",
+          "平台抢不到吧",
+          "我这直接出票",
+          "比官方便宜200",
+          "但得先付定金锁位",
+          "就剩最后一张了",
+          "你转500定金"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782099362906_ooqgqgw6",
+      "createdAt": "2026-06-22T03:36:02.906Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 3,
+      "source": "ai",
+      "historySummary": "user:500定金？我直接转你全款吧，给我留两张！ | scammer:姐妹你太爽快了！全款两张，我这就锁票！ | scammer:不过内部票得走私下转账，平台验不了，你懂的～ | scammer:转完我秒发电子码，决赛见！ | scammer:（骗子发送了一张“伪造聊天记录截图”，诱导你相信交易真实发生过） | user:转你500定金，剩下的决赛后补行不？我最近手头紧～",
+      "scammerMessages": [
+        "姐妹，手头紧没事，先付500定金，余款决赛后补也行，我帮你留两张！",
+        "内部票名额真就最后了，你转完我立马发码，错过可没啦～",
+        "平台验不了内部票，但票码官方能查，你放心转吧！"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "行吧，我转500定金，你发码我验真后再补余款",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "不转，我要走官方平台交易，私下转账我不放心",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "500定金？我转你500个表情包，换你一张票行不？",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "你哥在组委会？那让他把票挂官方平台，我直接拍",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "不转，我要走官方平台交易，私下转账我不放心",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "direct_transfer",
+          "off_platform"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "user",
+          "500定金",
+          "我直接转你全款吧",
+          "给我留两张",
+          "scammer",
+          "姐妹你太爽快了",
+          "全款两张",
+          "我这就锁票",
+          "不过内部票得走私下转账",
+          "平台验不了",
+          "你懂的"
+        ]
+      }
+    },
+    {
+      "id": "rag_1782099369028_f2gdkdc9",
+      "createdAt": "2026-06-22T03:36:09.028Z",
+      "themeId": "sports_event",
+      "themeName": "世界杯赛事",
+      "round": 1,
+      "source": "ai",
+      "historySummary": "",
+      "scammerMessages": [
+        "姐妹！世界杯决赛内部票，刚放出来3张，手慢无！",
+        "不走平台，直接转我定金500就能锁位，赛后原价出。",
+        "票务平台要抽成，走私下便宜又稳，你懂的吧？"
+      ],
+      "options": [
+        {
+          "id": "A",
+          "text": "好呀好呀，我马上转你定金，快给我留一张！",
+          "category": "wrong"
+        },
+        {
+          "id": "B",
+          "text": "先走官方平台验真吧，不然我不放心诶。",
+          "category": "correct"
+        },
+        {
+          "id": "C",
+          "text": "内部票？你咋不自己去看，还便宜我？",
+          "category": "funny"
+        },
+        {
+          "id": "D",
+          "text": "我转你500，你发我票码截图看看呗？",
+          "category": "wrong"
+        }
+      ],
+      "correctOptionId": "B",
+      "correctOptionText": "先走官方平台验真吧，不然我不放心诶。",
+      "classification": {
+        "scammerTone": "pressure",
+        "pressureLevel": "high",
+        "riskTags": [
+          "deposit",
+          "off_platform"
+        ],
+        "keywords": [
+          "世界杯赛事",
+          "姐妹",
+          "世界杯决赛内部票",
+          "刚放出来3张",
+          "手慢无",
+          "不走平台",
+          "直接转我定金500就能锁",
+          "赛后原价出",
+          "票务平台要抽成",
+          "走私下便宜又稳",
+          "你懂的吧",
+          "好呀好呀"
+        ]
+      }
+    }
+  ]
+}

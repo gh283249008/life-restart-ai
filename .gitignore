@@ -12,3 +12,5 @@ auto-*.d.ts
 package-lock.json
 pnpm-lock.yaml
 tsconfig.tsbuildinfo
+
+.env

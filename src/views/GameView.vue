@@ -1,133 +1,93 @@
 <template>
-  <div ref="gameScreenRef" class="game-screen game-stage-shell h-full flex flex-col gap-3 relative pt-10" :style="gameScreenStyle">
-    <div class="game-stage-reference-line" aria-hidden="true"></div>
-    <div class="game-screen-content game-stage-content-layer">
-      <template v-if="stage === 'playing'">
-        <div v-if="loadError" class="absolute inset-x-0 bottom-0 z-30 text-center text-red-700 overflow-visible">
-            {{ loadError }}
-            <pre v-if="rawAiError" class="mt-3 p-3 text-left text-xs bg-red-50 border border-red-200 rounded whitespace-pre-wrap break-words">{{ rawAiError }}</pre>
-            <div class="mt-3">
-              <button @click="retryCurrentRound" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">重试本轮</button>
-            </div>
-        </div>
+  <div ref="gameScreenRef" class="game-screen" :style="gameScreenStyle">
 
-        <Transition
-          name="choice-panel"
-          @before-enter="onChoicePanelBeforeEnter"
-          @enter="onChoicePanelEnter"
-          @leave="onChoicePanelLeave"
-        >
-          <div
-            v-show="showChoicePanel && !loadError"
-            class="absolute z-30 game-stage-panel-layer overlay-choice-panel-content"
-            :style="choicePanelBoardStyle"
-          >
-            <div class="overlay-choice-panel-body">
-              <div class="overlay-choice-options-absolute">
-                <button
-                  v-for="item in displayedOptions"
-                  :key="item.id"
-                  class="choice-button choice-button-layered"
-                  :style="getChoiceButtonLayerStyle(item.displaySlot)"
-                  :disabled="replying || loading || delivering"
-                  @click="pickOption(item.id)"
-                >
-                  <span class="choice-button-label">
-                    <span class="choice-button-textbox">
-                      {{ item.text }}
-                    </span>
-                  </span>
-                </button>
+    <!-- 舞台：logo + 手机模型，整体始终全景可见 -->
+    <div class="game-stage">
+      <img class="game-logo" :src="gameLogoImage" alt="你这票保熟吗" />
+
+      <div class="phone-area">
+        <div class="phone-frame">
+          <img class="phone-frame-image" :src="phoneFrameImage" alt="手机模型" />
+          <!-- 手机屏幕容器：后续所有游戏内容放这里 -->
+          <div class="phone-screen">
+            <div class="phone-game-ui">
+              <div class="phone-dialogue-layer">
+                <div class="phone-chat-row phone-chat-row-scammer">
+                  <img class="phone-avatar phone-avatar-scammer" :src="scammerAvatarImage" alt="坏瓜头像" />
+                  <div
+                    v-if="scammerVisibleBubble"
+                    class="phone-message phone-message-scammer"
+                    :class="{ 'is-leaving': scammerVisibleBubble.leaving, 'is-popping': scammerVisibleBubble.popping }"
+                  >
+                    <img
+                      v-if="scammerVisibleBubble.imageUrl"
+                      class="phone-message-image"
+                      :src="scammerVisibleBubble.imageUrl"
+                      alt="坏瓜发送的图片"
+                    />
+                    <div v-else-if="scammerVisibleBubble.voiceDurationSec" class="phone-voice">
+                      <span class="phone-voice-icon"></span>
+                      <span>{{ scammerVisibleBubble.voiceDurationSec }}''</span>
+                      <span v-if="scammerVisibleBubble.unread" class="phone-voice-dot"></span>
+                    </div>
+                    <p v-else>{{ scammerVisibleBubble.text }}</p>
+                  </div>
+                </div>
+
+                <div class="phone-chat-row phone-chat-row-user">
+                  <div
+                    v-if="userVisibleBubble"
+                    class="phone-message phone-message-user"
+                    :class="{ 'is-leaving': userVisibleBubble.leaving, 'is-popping': userVisibleBubble.popping }"
+                  >
+                    <p>{{ userVisibleBubble.text }}</p>
+                  </div>
+                  <img class="phone-avatar phone-avatar-player" :src="playerAvatarImage" alt="玩家头像" />
+                </div>
+              </div>
+
+              <transition
+                @before-enter="onChoicePanelBeforeEnter"
+                @enter="onChoicePanelEnter"
+                @leave="onChoicePanelLeave"
+              >
+                <div v-if="showChoicePanel" class="phone-choice-panel">
+                  <button
+                    v-for="option in displayedOptions"
+                    :key="option.id"
+                    type="button"
+                    class="phone-choice-button"
+                    :disabled="replying || loading"
+                    @click="pickOption(option.id)"
+                    :aria-label="`${option.displaySlot}：${option.text}`"
+                  >
+                    <img
+                      class="phone-choice-image"
+                      :src="choiceAssetMap[option.displaySlot]"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    <span class="phone-choice-text">{{ option.text }}</span>
+                  </button>
+                </div>
+              </transition>
+            </div>
+
+            <!-- 错误提示 -->
+            <div v-if="stage === 'playing' && loadError" class="phone-error">
+              {{ loadError }}
+              <pre v-if="rawAiError" class="phone-error-raw">{{ rawAiError }}</pre>
+              <div class="mt-3">
+                <button @click="retryCurrentRound" class="px-4 py-2 bg-red-600 text-white rounded">重试本轮</button>
               </div>
             </div>
-          </div>
-        </Transition>
-      </template>
 
-      <div class="comic-stage game-stage game-stage-main flex-1 min-h-0 pt-1 pb-24 relative -top-[300px]">
-        <img class="comic-avatar comic-avatar-scammer game-stage-avatar-layer" :src="scammerAvatarImage" alt="坏窝瓜头像">
-        <div class="comic-dialogue-layout game-stage-dialogue-layer">
-          <div v-if="loading && round === 1 && visibleHistory.length === 0" class="first-round-waiting">
-            坏瓜正在想坏点子ing
-          </div>
-          <div class="comic-dialogue-debug-layer" aria-hidden="true">
-            <div class="comic-dialogue-zone comic-dialogue-zone-scammer">
-              <span class="comic-dialogue-zone-label">坏蛋对话区</span>
-            </div>
-            <div class="comic-dialogue-zone comic-dialogue-zone-player">
-              <span class="comic-dialogue-zone-label">玩家对话区</span>
-            </div>
-          </div>
-          <div class="comic-dialogue-live-layer">
-            <div class="comic-dialogue-slot comic-dialogue-slot-scammer">
-              <template v-if="scammerVisibleBubble">
-                <div class="comic-dialogue-entry" :class="scammerVisibleBubble.leaving ? 'bubble-leaving' : ''">
-                  <template v-if="scammerVisibleBubble.voiceDurationSec">
-                    <div class="voice-wrap voice-wrap-scammer">
-                      <div class="comic-bubble comic-bubble-scammer">
-                        <div class="voice-row voice-row-scammer">
-                          <div class="voice-bubble voice-bubble-scammer">
-                            <span class="voice-icon" aria-hidden="true"></span>
-                            <span class="voice-gap" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                            <span class="voice-duration">{{ scammerVisibleBubble.voiceDurationSec }}s</span>
-                          </div>
-                          <span v-if="scammerVisibleBubble.unread" class="voice-unread-dot" aria-label="未读"></span>
-                        </div>
-                      </div>
-                      <span class="voice-transcribe voice-transcribe-outside">转文字</span>
-                    </div>
-                  </template>
-                  <div v-else-if="scammerVisibleBubble.imageUrl" class="comic-image-card comic-image-card-scammer">
-                    <img :src="scammerVisibleBubble.imageUrl" alt="内部专享票" class="scam-image" />
-                    <p v-if="scammerVisibleBubble.text" class="mt-2">{{ scammerVisibleBubble.text }}</p>
-                  </div>
-                  <div v-else class="comic-bubble comic-bubble-scammer" :class="{ 'comic-bubble-pop': scammerVisibleBubble.popping }">
-                    <div class="comic-bubble-content">{{ scammerVisibleBubble.text }}</div>
-                  </div>
-                </div>
-              </template>
-            </div>
-
-            <div class="comic-dialogue-slot comic-dialogue-slot-user">
-              <template v-if="userVisibleBubble">
-                <div class="comic-dialogue-entry" :class="userVisibleBubble.leaving ? 'bubble-leaving' : ''">
-                  <template v-if="userVisibleBubble.voiceDurationSec">
-                    <div class="voice-wrap voice-wrap-scammer">
-                      <div class="comic-bubble comic-bubble-user">
-                        <div class="voice-row voice-row-scammer">
-                          <div class="voice-bubble voice-bubble-scammer">
-                            <span class="voice-icon" aria-hidden="true"></span>
-                            <span class="voice-gap" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                            <span class="voice-duration">{{ userVisibleBubble.voiceDurationSec }}s</span>
-                          </div>
-                          <span v-if="userVisibleBubble.unread" class="voice-unread-dot" aria-label="未读"></span>
-                        </div>
-                      </div>
-                      <span class="voice-transcribe voice-transcribe-outside">转文字</span>
-                    </div>
-                  </template>
-                  <div v-else-if="userVisibleBubble.imageUrl" class="comic-image-card comic-image-card-user">
-                    <img :src="userVisibleBubble.imageUrl" alt="内部专享票" class="scam-image" />
-                    <p v-if="userVisibleBubble.text" class="mt-2">{{ userVisibleBubble.text }}</p>
-                  </div>
-                  <div v-else class="comic-bubble comic-bubble-user" :class="{ 'comic-bubble-pop': userVisibleBubble.popping }">
-                    <div class="comic-bubble-content">{{ userVisibleBubble.text }}</div>
-                  </div>
-                </div>
-              </template>
-            </div>
           </div>
         </div>
-        <img class="comic-avatar comic-avatar-player game-stage-avatar-layer" :src="playerAvatarImage" alt="玩家头像">
       </div>
     </div>
 
-    <div
-      class="game-screen-overlay game-stage-ornament-layer"
-      :style="gameScreenOverlayStyle"
-      aria-hidden="true"
-    ></div>
-
+    <!-- 开场弹窗（保留） -->
     <div v-if="showIntroModal" class="intro-mask">
       <div class="intro-modal" :style="introModalStyle">
         <img
@@ -173,22 +133,23 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import gamePageBackground from '@/assets/game/background.webp'
+import gameLogoImage from '@/assets/game/game-logo.webp'
+import phoneFrameImage from '@/assets/game/phone-frame.webp'
+import scammerAvatarImage from '@/assets/game/scammer-avatar.webp'
+import playerAvatarImage from '@/assets/game/player-avatar.webp'
+import optionAImage from '@/assets/game/options/option-a.webp'
+import optionBImage from '@/assets/game/options/option-b.webp'
+import optionCImage from '@/assets/game/options/option-c.webp'
+import optionDImage from '@/assets/game/options/option-d.webp'
 import introModalBackground from '../../.monkeycode-tmp-files/bde8039f-底图-改-1.png'
-import gamePageBackground from '../../.monkeycode-tmp-files/4ee61b88-底图-07-1.webp'
-import gamePageOverlay from '../../.monkeycode-tmp-files/88f16943-顶-1.svg'
-import choicePanelBoard from '../../.monkeycode-tmp-files/288c1108-未标题-997781-09-1.webp'
-import choiceButtonAImage from '../../.monkeycode-tmp-files/746701c8-1-10-1.webp'
-import choiceButtonBImage from '../../.monkeycode-tmp-files/084072b5-2-10-2.webp'
-import choiceButtonCImage from '../../.monkeycode-tmp-files/cd690f81-3-10-3.webp'
-import choiceButtonDImage from '../../.monkeycode-tmp-files/f0536ad9-4-10-1.webp'
-import playerAvatarImage from '../../.monkeycode-tmp-files/7c5e7595-小人头-1.svg'
-import scammerAvatarImage from '../../.monkeycode-tmp-files/aec773bc-瓜头-2.svg'
 import introCopyImage from '../../.monkeycode-tmp-files/c293db87-未标题、-1.svg'
 import introRuleImage from '../../.monkeycode-tmp-files/07da2bf2-玩法(2)-1.svg'
 import introScoreImage from '../../.monkeycode-tmp-files/5d1ec481-记分-1.svg'
@@ -258,6 +219,7 @@ const SCAM_IMAGE_POOL: Array<{ kind: ScamImageKind; url: string; narrative: stri
 ]
 
 const sessionId = ref(`session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
+const route = useRoute()
 const router = useRouter()
 
 const round = ref(1)
@@ -298,101 +260,29 @@ const userVisibleBubble = computed(() => visibleHistory.value.find((item) => ite
 const gameScreenRef = ref<HTMLElement | null>(null)
 let gameScreenResizeObserver: ResizeObserver | null = null
 
-const GAME_BG_WIDTH = 1532
-const GAME_BG_HEIGHT = 3062
-const PLAYER_LINE_Y = 1537
-const GAME_STAGE_VISUAL_OFFSET = 270
-const PLAYER_AVATAR_RATIO = 401.24 / 400.84
-const SCAMMER_AVATAR_RATIO = 436.49 / 466.99
-
-const gameStageAnchorVars = ref<Record<string, string>>({
-  '--player-line-top': '50% ',
-  '--player-avatar-top': '60%',
-  '--scammer-avatar-top': '42%',
-  '--player-dialogue-top': '70%',
-  '--scammer-dialogue-top': '52%',
-  '--player-avatar-size': 'min(35.1vw, 157px)',
-  '--scammer-avatar-size': 'min(38.61vw, 172px)'
-})
+function getInitialTheme() {
+  const routeTheme = typeof route.query.theme === 'string' ? route.query.theme : ''
+  return SCENARIO_THEMES.find((theme) => theme.id === routeTheme) ||
+    SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+}
 
 const introModalStyle = {
   backgroundImage: `url(${introModalBackground})`
 }
 
-const gameScreenStyle = computed(() => ({
-  backgroundImage: `url(${gamePageBackground})`,
-  ...gameStageAnchorVars.value
-}))
-
-const gameScreenOverlayStyle = {
-  backgroundImage: `url(${gamePageOverlay})`,
-  backgroundPosition: 'center calc(100% + 30px)'
+const gameScreenStyle = {
+  backgroundImage: `url(${gamePageBackground})`
 }
 
-const choicePanelBoardStyle = computed(() => ({
-  backgroundImage: `url(${choicePanelBoard})`,
-  backgroundPosition: 'center center',
-  backgroundSize: '100% auto',
-  width: '100%',
-  bottom: '21px'
-}))
+const choiceAssetMap: Record<'A' | 'B' | 'C' | 'D', string> = {
+  A: optionAImage,
+  B: optionBImage,
+  C: optionCImage,
+  D: optionDImage
+}
 
 function updateGameStageAnchors() {
-  const node = gameScreenRef.value
-  if (!node) return
-
-  const width = node.clientWidth
-  const height = node.clientHeight
-  if (!width || !height) return
-
-  const scale = Math.max(width / GAME_BG_WIDTH, height / GAME_BG_HEIGHT)
-  const playerLineTopPx = PLAYER_LINE_Y * scale
-  const playerAvatarWidthPx = Math.min(width * 0.351, 157)
-  const scammerAvatarWidthPx = Math.min(width * 0.3861, 172)
-  const playerAvatarHeightPx = playerAvatarWidthPx * PLAYER_AVATAR_RATIO
-  const scammerAvatarHeightPx = scammerAvatarWidthPx * SCAMMER_AVATAR_RATIO
-  const playerAvatarTopPx = playerLineTopPx - playerAvatarHeightPx + GAME_STAGE_VISUAL_OFFSET
-  const scammerLineTopPx = playerLineTopPx - height * 0.177
-  const scammerAvatarTopPx = scammerLineTopPx - scammerAvatarHeightPx + GAME_STAGE_VISUAL_OFFSET
-
-  gameStageAnchorVars.value = {
-    '--player-line-top': `${playerLineTopPx}px`,
-    '--player-avatar-top': `${playerAvatarTopPx}px`,
-    '--scammer-avatar-top': `${scammerAvatarTopPx}px`,
-    '--player-dialogue-top': `${playerAvatarTopPx - 20}px`,
-    '--scammer-dialogue-top': `${scammerAvatarTopPx - 40}px`,
-    '--player-avatar-size': `${playerAvatarWidthPx}px`,
-    '--scammer-avatar-size': `${scammerAvatarWidthPx}px`
-  }
-}
-
-const choiceButtonImageMap: Record<string, string> = {
-  A: choiceButtonAImage,
-  B: choiceButtonBImage,
-  C: choiceButtonCImage,
-  D: choiceButtonDImage
-}
-
-const choiceButtonLayoutMap: Record<string, { left: number; top: number; width: number; height: number }> = {
-  A: { left: 190.51, top: 214.32, width: 1815, height: 400 },
-  B: { left: 187.15, top: 610.41, width: 1815, height: 400 },
-  C: { left: 187.15, top: 966.89, width: 1815, height: 400 },
-  D: { left: 187.15, top: 1351.54, width: 1815, height: 400 }
-}
-
-function getChoiceButtonLayerStyle(optionId: string) {
-  const layout = choiceButtonLayoutMap[optionId] || choiceButtonLayoutMap.D
-  const buttonImage = choiceButtonImageMap[optionId] || choiceButtonImageMap.D
-  return {
-    left: `${(layout.left / 2223) * 100}%`,
-    top: `${(layout.top / 1955.75) * 100}%`,
-    width: `${(layout.width / 2223) * 100}%`,
-    height: `${(layout.height / 1955.75) * 100}%`,
-    backgroundImage: `url(${buttonImage})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center center',
-    backgroundSize: '100% 100%'
-  }
+  // 占位，新 UI 搭建时填充
 }
 
 function shuffleArray<T>(items: T[]) {
@@ -879,7 +769,7 @@ async function restartGame() {
   prefetchState.value = 'pending'
   introStage.value = 0
   introReady.value = false
-  currentTheme.value = SCENARIO_THEMES[Math.floor(Math.random() * SCENARIO_THEMES.length)]
+  currentTheme.value = getInitialTheme()
   showChoicePanel.value = false
   startSession(sessionId.value, currentTheme.value.id, currentTheme.value.name)
   prefetchFirstRound()
@@ -905,3 +795,342 @@ onBeforeUnmount(() => {
   gameScreenResizeObserver = null
 })
 </script>
+
+<style scoped>
+/* 全屏底图背景 */
+.game-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+}
+
+/* 舞台：logo 在上、手机模型在下，整体垂直居中，始终完整可见 */
+.game-stage {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 0.6vh, 8px);
+  padding: clamp(4px, 1vh, 12px) 2px;
+  box-sizing: border-box;
+}
+
+/*
+ * 游戏页 logo：布局占位不变（手机位置/大小不受影响），
+ * 仅用 transform 视觉放大 20%，叠到手机上的碰撞按要求无视。
+ */
+.game-logo {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  max-width: min(89%, 480px);
+  max-height: 13.5%;
+  object-fit: contain;
+  transform: scale(1.2);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 手机模型可用区域：吃掉 logo 以外的剩余空间 */
+.phone-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+ * 手机模型容器：
+ * height:100% 吃满剩余高度，aspect-ratio 据此算出宽度；
+ * max-width:100% 在窄屏时反向收缩高度 —— 保证整机永远完整显示。
+ */
+.phone-frame {
+  position: relative;
+  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1098 / 1803;
+}
+
+.phone-frame-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  z-index: 5;
+}
+
+/*
+ * 手机屏幕内容区：映射到机身玻璃屏区域（百分比定位，随手机框等比缩放）。
+ * 后续游戏内容（对话、选项等）放进这里。insets 为初步估值，可按拼图细调。
+ */
+.phone-screen {
+  position: absolute;
+  left: 6.9%;
+  right: 6.9%;
+  top: 4.25%;
+  bottom: 4.15%;
+  overflow: hidden;
+  z-index: 6;
+  border-radius: 24px;
+  background: transparent;
+}
+
+.phone-game-ui {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.phone-dialogue-layer {
+  position: absolute;
+  left: 8.5%;
+  right: 8.5%;
+  top: 15%;
+  bottom: 41%;
+  z-index: 2;
+}
+
+.phone-chat-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 86px;
+}
+
+.phone-chat-row-scammer {
+  top: 0;
+  justify-content: flex-start;
+}
+
+.phone-chat-row-user {
+  top: 50%;
+  justify-content: flex-end;
+}
+
+.phone-avatar {
+  position: relative;
+  z-index: 2;
+  display: block;
+  flex: 0 0 auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: center bottom;
+}
+
+.phone-avatar-scammer {
+  width: 29%;
+  animation: phone-avatar-scammer-wobble 2.7s steps(1, end) infinite;
+}
+
+.phone-avatar-player {
+  width: 28%;
+  transform: translateY(-48%);
+  animation: phone-avatar-player-wobble 3.2s steps(1, end) infinite;
+}
+
+.phone-message {
+  position: relative;
+  z-index: 3;
+  max-width: 50%;
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  color: #191919;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(76, 39, 17, 0.14);
+  transform-origin: center bottom;
+}
+
+.phone-message p {
+  margin: 0;
+  font-size: clamp(10px, 2.4vw, 12px);
+  line-height: 1.38;
+  word-break: break-word;
+}
+
+.phone-message-scammer {
+  margin-left: 2px;
+  background: #ffffff;
+}
+
+.phone-message-user {
+  margin-right: 2px;
+  background: #a9ea7a;
+}
+
+.phone-message-scammer::after,
+.phone-message-user::after {
+  position: absolute;
+  top: 12px;
+  width: 7px;
+  height: 10px;
+  content: '';
+  background: inherit;
+  box-shadow: inherit;
+}
+
+.phone-message-scammer::after {
+  left: -4px;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+
+.phone-message-user::after {
+  right: -4px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.phone-message.is-popping {
+  animation: phone-bubble-pop 0.32s cubic-bezier(0.2, 0.9, 0.28, 1.18);
+}
+
+.phone-message.is-leaving {
+  animation: phone-bubble-leave 0.22s ease forwards;
+}
+
+.phone-message-image {
+  display: block;
+  width: 100%;
+  max-width: 53px;
+  border-radius: 6px;
+}
+
+.phone-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 83px;
+  min-height: 27px;
+  font-size: clamp(10px, 2.6vw, 13px);
+  line-height: 1;
+}
+
+.phone-voice-icon {
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid #552513;
+}
+
+.phone-voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ef4444;
+}
+
+.phone-choice-panel {
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  bottom: 2%;
+  z-index: 7;
+  display: grid;
+  gap: 4px;
+}
+
+.phone-choice-button {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 667 / 126;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phone-choice-button:disabled {
+  opacity: 0.78;
+}
+
+.phone-choice-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.phone-choice-text {
+  position: absolute;
+  left: calc(16.8% + 10px);
+  right: calc(7.8% - 10px);
+  top: 50%;
+  z-index: 1;
+  color: #4d2c19;
+  font-size: clamp(8px, 2.1vw, 10px);
+  line-height: 1.18;
+  text-align: left;
+  word-break: break-word;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+@keyframes phone-avatar-scammer-wobble {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  20% { transform: translate3d(-2px, 1px, 0) rotate(-1deg); }
+  42% { transform: translate3d(2px, -1px, 0) rotate(2deg); }
+  66% { transform: translate3d(-1px, 2px, 0) rotate(-1deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+
+@keyframes phone-avatar-player-wobble {
+  0% { transform: translate3d(0, -48%, 0) rotate(0deg); }
+  28% { transform: translate3d(1px, calc(-48% - 1px), 0) rotate(1deg); }
+  58% { transform: translate3d(-1px, calc(-48% + 1px), 0) rotate(-0.6deg); }
+  100% { transform: translate3d(0, -48%, 0) rotate(0deg); }
+}
+
+@keyframes phone-bubble-pop {
+  0% { opacity: 0; transform: scale(0.74); }
+  70% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes phone-bubble-leave {
+  to { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
+.phone-error {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 16%;
+  text-align: center;
+  color: #b91c1c;
+  z-index: 5;
+}
+
+.phone-error-raw {
+  margin-top: 10px;
+  padding: 10px;
+  text-align: left;
+  font-size: 11px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+</style>

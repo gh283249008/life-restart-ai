@@ -17,6 +17,12 @@
     margin: 0;
     padding: 0;
   }
+
+  *,
+  *::before,
+  *::after {
+    font-family: 'FZLTKH-GBK-Var', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
   
   body {
     @apply bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen;
@@ -46,6 +52,16 @@
     border: 0;
     box-shadow: none;
     padding: 0;
+  }
+
+  .phone-stage.poster-stage {
+    width: 100vw;
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    overflow: auto;
+    background: transparent;
   }
 
   .bgm-toggle {
@@ -184,6 +200,75 @@
     gap: 20px;
     width: 68%;
     transform: translateX(-50%);
+  }
+
+  .lobby-world-cup-button {
+    position: absolute;
+    left: 80%;
+    top: 45%;
+    z-index: 3;
+    width: 25%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    transform: translate(-50%, -50%);
+    transform-origin: 50% 82%;
+    animation: lobby-world-cup-wobble 1.2s step-end infinite;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .lobby-world-cup-button:active {
+    animation-play-state: paused;
+    transform: translate(-50%, calc(-50% + 1px));
+  }
+
+  .lobby-world-cup-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .lobby-world-cup-label {
+    position: absolute;
+    left: 80%;
+    top: 55%;
+    z-index: 3;
+    display: block;
+    width: 34%;
+    height: auto;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  @keyframes lobby-world-cup-wobble {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    20% {
+      transform: translate(calc(-50% - 5px), calc(-50% + 1px)) rotate(-10deg);
+    }
+
+    40% {
+      transform: translate(calc(-50% + 4px), calc(-50% - 1px)) rotate(8deg);
+    }
+
+    60% {
+      transform: translate(calc(-50% - 3px), -50%) rotate(-6deg);
+    }
+
+    80% {
+      transform: translate(calc(-50% + 3px), calc(-50% + 1px)) rotate(7deg);
+    }
+
+    100% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
   }
 
   .lobby-action-slot {

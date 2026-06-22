@@ -2,118 +2,64 @@
   <section ref="resultScreenRef" class="result-screen" :style="resultStageVars">
     <div ref="resultCaptureRef" class="result-capture-surface">
       <img class="result-screen-image" :src="resultBackgroundImage" alt="结算页背景图" />
-
-      <div class="result-screen-content">
-        <div class="result-board-layer" aria-hidden="true">
-          <img class="result-board result-board-14" :src="resultBoard14Image" alt="" />
-          <img class="result-board result-board-16" :src="resultBoard16Image" alt="" />
-          <img class="result-board result-board-15" :src="resultBoard15Image" alt="" />
-        </div>
-
-        <div v-if="resultInsightTip" class="result-board-content-layer">
-          <div v-if="resultOutcomeStickerImage" class="result-board-content result-board-content-14">
-            <div class="result-outcome-summary">
-              <img
-                class="result-outcome-sticker"
-                :class="{ 'result-outcome-sticker-wobble': true }"
-                :src="resultOutcomeStickerImage"
-                alt=""
-              />
-              <div class="result-outcome-copy">
-                <p class="result-outcome-scene">{{ resultScenarioTitle }}</p>
-                <p class="result-outcome-finish">调查完毕！</p>
-              </div>
+      <div class="result-screen-content result-compose-layer">
+        <div class="result-main-board">
+          <img class="result-main-board-image" :src="resultBoardMainImage" alt="结算完成" />
+          <div class="result-inner-board-group">
+            <img class="result-inner-board result-inner-board-top" :src="resultBoardTopImage" alt="" />
+            <div class="result-top-board-copy">
+              <p class="result-top-board-scenario">{{ resultScenarioTitle }}</p>
+              <p class="result-top-board-finish">调查完成！</p>
             </div>
-          </div>
-
-          <div v-if="resultVillainCard" class="result-board-content result-board-content-16">
-            <div ref="setResultVillainTextBoxRef" class="result-text-box result-text-box-16" :class="resultVillainCardCompactClass">
-              <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
-              <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
-              <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
+            <img class="result-inner-board result-inner-board-middle" :src="resultBoardMiddleImage" alt="" />
+            <div class="result-middle-board-copy">
+              <p class="result-villain-name">{{ resultVillainCard.name }}</p>
+              <p class="result-villain-body">{{ resultVillainCard.desc }}</p>
+              <p class="result-villain-review">{{ resultPlayerSummary }}</p>
             </div>
-          </div>
-
-          <div class="result-board-content result-board-content-15">
-            <div class="result-text-box result-text-box-15">
-              <p class="result-board-tip">{{ resultInsightTip }}</p>
+            <img class="result-inner-board result-inner-board-bottom" :src="resultBoardBottomImage" alt="" />
+            <div class="result-bottom-board-copy">
+              <p v-for="tip in resultTips" :key="tip">{{ tip }}</p>
             </div>
           </div>
         </div>
-
-        <div v-if="resultSportsStickerVisible" class="result-sticker-layer result-sticker-layer-excluded">
-          <button
-            type="button"
-            class="result-sticker-hitbox"
-            :class="{ 'is-boing': resultStickerBoing }"
-            @click="triggerResultStickerBoing"
-            aria-label="体育赛事贴纸"
-          >
-            <img class="result-sticker result-sticker-sports" :src="resultSportsStickerImage" alt="" />
-            <span v-if="resultStickerFeedbackVisible" class="result-sticker-feedback">woo~</span>
-          </button>
-        </div>
-
       </div>
     </div>
 
-    <div class="result-screen-content">
-      <div class="result-board-layer" aria-hidden="true">
-        <img class="result-board result-board-14" :src="resultBoard14Image" alt="" />
-        <img class="result-board result-board-16" :src="resultBoard16Image" alt="" />
-        <img class="result-board result-board-15" :src="resultBoard15Image" alt="" />
-      </div>
-
-      <div v-if="resultInsightTip" class="result-board-content-layer">
-        <div v-if="resultOutcomeStickerImage" class="result-board-content result-board-content-14">
-          <div class="result-outcome-summary">
-            <img
-              class="result-outcome-sticker"
-              :class="{ 'result-outcome-sticker-wobble': true }"
-              :src="resultOutcomeStickerImage"
-              alt=""
-            />
-            <div class="result-outcome-copy">
-              <p class="result-outcome-scene">{{ resultScenarioTitle }}</p>
-              <p class="result-outcome-finish">调查完毕！</p>
-            </div>
+    <div class="result-screen-content result-compose-layer result-compose-interactive">
+      <div class="result-main-board">
+        <img class="result-main-board-image" :src="resultBoardMainImage" alt="结算完成" />
+        <div class="result-inner-board-group">
+          <img class="result-inner-board result-inner-board-top" :src="resultBoardTopImage" alt="" />
+          <div class="result-top-board-copy">
+            <p class="result-top-board-scenario">{{ resultScenarioTitle }}</p>
+            <p class="result-top-board-finish">调查完成！</p>
           </div>
-        </div>
-
-        <div v-if="resultVillainCard" class="result-board-content result-board-content-16">
-          <div ref="setResultVillainTextBoxRef" class="result-text-box result-text-box-16" :class="resultVillainCardCompactClass">
-            <p class="result-villain-card-name">{{ resultVillainCard.name }}</p>
-            <p class="result-villain-card-desc">{{ resultVillainCard.desc }}</p>
-            <p v-if="resultScammerSummary" class="result-villain-card-ai">{{ resultScammerSummary }}</p>
+          <img class="result-inner-board result-inner-board-middle" :src="resultBoardMiddleImage" alt="" />
+          <div class="result-middle-board-copy">
+            <p class="result-villain-name">{{ resultVillainCard.name }}</p>
+            <p class="result-villain-body">{{ resultVillainCard.desc }}</p>
+            <p class="result-villain-review">{{ resultPlayerSummary }}</p>
           </div>
-        </div>
-
-        <div class="result-board-content result-board-content-15">
-          <div class="result-text-box result-text-box-15">
-            <p class="result-board-tip">{{ resultInsightTip }}</p>
+          <img class="result-inner-board result-inner-board-bottom" :src="resultBoardBottomImage" alt="" />
+          <div class="result-bottom-board-copy">
+            <p v-for="tip in resultTips" :key="tip">{{ tip }}</p>
           </div>
         </div>
       </div>
 
-      <div v-if="resultSportsStickerVisible" class="result-sticker-layer">
-        <button
-          type="button"
-          class="result-sticker-hitbox"
-          :class="{ 'is-boing': resultStickerBoing }"
-          @click="triggerResultStickerBoing"
-          aria-label="体育赛事贴纸"
-        >
-          <img class="result-sticker result-sticker-sports" :src="resultSportsStickerImage" alt="" />
-          <span v-if="resultStickerFeedbackVisible" class="result-sticker-feedback">woo~</span>
+      <div class="result-bottom-actions">
+        <button type="button" class="result-bottom-action" @click="handleGeneratePoster" aria-label="生成分享海报">
+          <img class="result-bottom-action-image" :src="resultSharePosterButtonImage" alt="生成分享海报" />
+        </button>
+        <button type="button" class="result-bottom-action" @click="openSafeShuProfile" aria-label="关注安全薯">
+          <img class="result-bottom-action-image" :src="resultFollowSafeShuButtonImage" alt="关注安全薯" />
         </button>
       </div>
+    </div>
 
-      <div class="result-actions">
-        <button class="result-action-button result-action-share" @click="handleGeneratePoster" aria-label="生成分享海报">
-          <img class="result-action-image" :src="resultShareButtonImage" alt="生成分享海报" />
-        </button>
-        <p v-if="resultActionTip" class="result-action-tip">{{ resultActionTip }}</p>
-      </div>
+    <div ref="resultPosterCaptureRef" class="result-poster-capture-source" aria-hidden="true">
+      <PosterCanvas />
     </div>
 
     <div v-if="resultPosterPreviewUrl" class="result-poster-modal" @click.self="closePosterPreview">
@@ -136,33 +82,23 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { loadGameResultSnapshot } from '@/services/gameSessionStore'
-import resultBackgroundImage from '../../.monkeycode-tmp-files/8612a3e0-底图-07(2)-1.webp'
-import resultBoard16Image from '../../.monkeycode-tmp-files/8f2caddf-板子-16-1.webp'
-import resultBoard15Image from '../../.monkeycode-tmp-files/b13d1ff4-板子-15(1)-2.webp'
-import resultBoard14Image from '../../.monkeycode-tmp-files/caa5ba8a-板子-14-3.webp'
-import resultShareButtonImage from '../../.monkeycode-tmp-files/88bd230f-分享按钮-17(1)-1.webp'
-import resultSportsStickerImage from '../../.monkeycode-tmp-files/d4641f41-体育赛事贴纸-50dpi.webp'
-import resultSuccessStickerImage from '../../.monkeycode-tmp-files/11930f20-成功-16(1)-1.webp'
-import resultFailureStickerImage from '../../.monkeycode-tmp-files/c513f57e-失败-16(1)-2.webp'
+import PosterCanvas from '@/components/PosterCanvas.vue'
+import resultBackgroundImage from '@/assets/game/result-background.webp'
+import resultBoardMainImage from '@/assets/game/result-board-main.webp'
+import resultBoardTopImage from '@/assets/game/result-board-top.webp'
+import resultBoardMiddleImage from '@/assets/game/result-board-middle.webp'
+import resultBoardBottomImage from '@/assets/game/result-board-bottom.webp'
+import resultSharePosterButtonImage from '@/assets/game/result-share-poster-button.webp'
+import resultFollowSafeShuButtonImage from '@/assets/game/result-follow-safe-shu-button.webp'
+import { openSafeShuProfile } from '@/services/safeShuLink'
 import resultShareToXhsButtonImage from '../../.monkeycode-tmp-files/share-to-xhs-button-v3.webp'
 
-const RESULT_BG_WIDTH = 2223
-const RESULT_BG_HEIGHT = 1955.75
+const RESULT_BG_WIDTH = 770
+const RESULT_BG_HEIGHT = 1531
+const RESULT_MAIN_BOARD_WIDTH = 1108
+const RESULT_MAIN_BOARD_HEIGHT = 2205
 const snapshot = loadGameResultSnapshot()
-
-const SCENARIO_RESULT_TIP_MAP: Record<string, string> = {
-  star_concert: '明星演唱会票务里，所谓“内部票、员工票、关系票”往往就是引你脱离平台私聊转账的第一步。',
-  music_festival: '音乐节套票最怕“先付定金帮你锁票”，真交易走平台，假骗子才一直催你先打钱。',
-  school_show: '校园拼团票最容易被“熟人氛围”麻痹，越是群里统一收款，越要先核身份、核渠道。',
-  last_minute: '开场前捡漏最常见的坑就是拿“最后一张”施压，越急越要先验真，别被倒计时带着走。',
-  fan_group: '粉丝群代抢一旦开始要账号、验证码、登录信息，本质就已经从买票变成骗号了。',
-  overseas_show: '海外场次代购最爱加收“税费、清关费、手续费”，凡是层层补款的基本都要提高警惕。',
-  sports_event: '热门赛事票源越紧张，越要坚持平台验真；敢让你私下先款后票的，多半就是赌你着急。',
-  scalper_ticket: '黄牛口中的“保真票源”没有平台担保就没有可信度，越强调稳，越要看验真链路。',
-  fake_platform: '仿冒票务平台最危险的点不是票，而是账号和支付信息；入口不对，后面每一步都不对。',
-  refund_scam: '退票诈骗最爱借“客服流程”要验证码或开屏幕共享，正规退款不会让你把安全权限交出去。'
-}
-
+const resultScenarioTitle = snapshot?.theme?.name || '本局情景'
 const SCENARIO_VILLAIN_CARD_MAP: Record<string, { name: string; desc: string }> = {
   star_concert: { name: '假票瓜', desc: '票是P的，码是假的，人是跑路的。' },
   music_festival: { name: '缩水瓜', desc: '三天通票变单日，比泡面包装还能缩。' },
@@ -170,99 +106,49 @@ const SCENARIO_VILLAIN_CARD_MAP: Record<string, { name: string; desc: string }> 
   last_minute: { name: '捡漏瓜', desc: '你以为是捡漏，其实是捡了个坑。' },
   fan_group: { name: '代抢瓜', desc: '帮你抢票是假，帮你花钱是真。' },
   overseas_show: { name: '海淘瓜', desc: '“我在海外帮你买”，IP一查在隔壁县。' },
-  sports_event: { name: '假赛瓜', desc: '赛事还没官宣，他的票已经印好了。' },
-  scalper_ticket: { name: '黄牛瓜', desc: '加价三倍，检票口一照——无效。' },
+  sports_event: { name: '假赛瓜', desc: '赛事还没官宣，它的票已经印好了。' },
+  scalper_ticket: { name: '黄牛瓜', desc: '加价三倍，检票口一照，无效。' },
   fake_platform: { name: '山寨瓜', desc: '网页和官方一模一样，除了收款人。' },
   refund_scam: { name: '连环瓜', desc: '票没了，手续费也没了，人也没了。' },
   world_cup: { name: '赌球瓜', desc: '票没买到，倒先输了一套房。' }
 }
+const resultVillainCard =
+  (snapshot?.theme?.id && SCENARIO_VILLAIN_CARD_MAP[snapshot.theme.id]) ||
+  { name: '坏瓜', desc: '套路很多，但破绽也很明显。' }
+const resultPlayerSummary =
+  snapshot?.finalReport?.playerSummary ||
+  '这局你完成了关键识别，记住所有绕开平台、催促转账、索要隐私的行为都要提高警惕。'
+const resultTips = (
+  snapshot?.finalReport?.tips?.length
+    ? snapshot.finalReport.tips
+    : [
+        '坚持平台担保交易，不私下转账。',
+        '验证码、身份证、银行卡信息不要发给陌生人。',
+        '遇到催促付款、绕开验真的话术，先停下来核实。'
+      ]
+).slice(0, 2)
 
 const resultScreenRef = ref<HTMLElement | null>(null)
 const resultCaptureRef = ref<HTMLElement | null>(null)
+const resultPosterCaptureRef = ref<HTMLElement | null>(null)
 const resultStageVars = ref<Record<string, string>>({
   '--result-bg-left': '0px',
   '--result-bg-top': '0px',
   '--result-bg-width': '100%',
   '--result-bg-height': '100%',
-  '--result-board-offset-x': '0px'
+  '--result-board-offset-x': '0px',
+  '--result-main-board-width': '0px',
+  '--result-main-board-height': '0px'
 })
 
 let resultResizeObserver: ResizeObserver | null = null
-const resultSportsStickerVisible = snapshot?.theme?.id === 'sports_event'
-const resultStickerBoing = ref(false)
-const resultStickerFeedbackVisible = ref(false)
 const resultPosterPreviewUrl = ref('')
 const resultPosterFile = ref<File | null>(null)
 const posterShareTip = ref('')
-const resultActionTip = ref('')
 const shareButtonImageBroken = ref(false)
-const resultVillainTextBoxRefs = ref<HTMLElement[]>([])
-const resultVillainCardCompactMode = ref<'normal' | 'compact' | 'ultra-compact'>('normal')
-let resultStickerBoingTimer = 0
-let resultStickerFeedbackTimer = 0
 let posterShareTimer = 0
 const XHS_PUBLISH_DEEPLINK =
   'xhsdiscover://post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
-
-const resultInsightTip =
-  (snapshot?.theme?.id && SCENARIO_RESULT_TIP_MAP[snapshot.theme.id]) ||
-  snapshot?.finalReport?.tips?.[0] ||
-  ''
-
-const resultVillainCard =
-  (snapshot?.theme?.id && SCENARIO_VILLAIN_CARD_MAP[snapshot.theme.id]) ||
-  null
-
-const resultOutcomeStickerImage =
-  snapshot?.finalReport?.result === '认输了' ? resultSuccessStickerImage : resultFailureStickerImage
-
-const isSuccessOutcome = snapshot?.finalReport?.result === '认输了'
-
-const resultScenarioTitle = snapshot?.theme?.name || '本局情景'
-
-function limitTextLength(text: string, maxLength: number) {
-  return Array.from(text || '').slice(0, maxLength).join('')
-}
-
-const resultScammerSummary = snapshot?.finalReport?.scammerSummary || ''
-const resultVillainCardCompactClass = ref<Record<string, boolean>>({})
-
-function setResultVillainTextBoxRef(element: Element | null) {
-  if (!(element instanceof HTMLElement)) return
-  if (resultVillainTextBoxRefs.value.includes(element)) return
-  resultVillainTextBoxRefs.value.push(element)
-}
-
-function syncResultVillainCardCompactClass() {
-  resultVillainCardCompactClass.value = {
-    'is-compact': resultVillainCardCompactMode.value === 'compact' || resultVillainCardCompactMode.value === 'ultra-compact',
-    'is-ultra-compact': resultVillainCardCompactMode.value === 'ultra-compact'
-  }
-}
-
-function hasTextBoxOverflow(element: HTMLElement) {
-  return element.scrollHeight - element.clientHeight > 1
-}
-
-function updateResultVillainCardCompactMode() {
-  const primaryBox = resultVillainTextBoxRefs.value[0]
-  if (!primaryBox) {
-    resultVillainCardCompactMode.value = 'normal'
-    syncResultVillainCardCompactClass()
-    return
-  }
-
-  const modeOrder: Array<'normal' | 'compact' | 'ultra-compact'> = ['normal', 'compact', 'ultra-compact']
-
-  for (const mode of modeOrder) {
-    resultVillainCardCompactMode.value = mode
-    syncResultVillainCardCompactClass()
-    const overflow = hasTextBoxOverflow(primaryBox)
-    if (!overflow) {
-      return
-    }
-  }
-}
 
 function updateResultStageVars() {
   const node = resultScreenRef.value
@@ -276,25 +162,31 @@ function updateResultStageVars() {
   const renderedWidth = RESULT_BG_WIDTH * scale
   const renderedHeight = RESULT_BG_HEIGHT * scale
   const offsetX = (width - renderedWidth) / 2
+  const boardScale = Math.min(
+    (width * 0.96) / RESULT_MAIN_BOARD_WIDTH,
+    (height * 0.96) / RESULT_MAIN_BOARD_HEIGHT
+  )
+  const mainBoardWidth = RESULT_MAIN_BOARD_WIDTH * boardScale
+  const mainBoardHeight = RESULT_MAIN_BOARD_HEIGHT * boardScale
 
   resultStageVars.value = {
     '--result-bg-left': `${offsetX}px`,
     '--result-bg-top': '0px',
     '--result-bg-width': `${renderedWidth}px`,
     '--result-bg-height': `${renderedHeight}px`,
-    '--result-board-offset-x': `${renderedWidth * 0.25}px`
+    '--result-board-offset-x': `${renderedWidth * 0.25}px`,
+    '--result-main-board-width': `${mainBoardWidth}px`,
+    '--result-main-board-height': `${mainBoardHeight}px`
   }
 }
 
 onMounted(async () => {
   await nextTick()
   updateResultStageVars()
-  updateResultVillainCardCompactMode()
 
   if (typeof ResizeObserver !== 'undefined') {
     resultResizeObserver = new ResizeObserver(() => {
       updateResultStageVars()
-      updateResultVillainCardCompactMode()
     })
     if (resultScreenRef.value) {
       resultResizeObserver.observe(resultScreenRef.value)
@@ -308,8 +200,6 @@ onBeforeUnmount(() => {
   resultResizeObserver?.disconnect()
   resultResizeObserver = null
   window.removeEventListener('resize', handleResultResize)
-  window.clearTimeout(resultStickerBoingTimer)
-  window.clearTimeout(resultStickerFeedbackTimer)
   window.clearTimeout(posterShareTimer)
   if (resultPosterPreviewUrl.value) {
     URL.revokeObjectURL(resultPosterPreviewUrl.value)
@@ -319,41 +209,17 @@ onBeforeUnmount(() => {
 
 function handleResultResize() {
   updateResultStageVars()
-  updateResultVillainCardCompactMode()
-}
-
-function triggerResultStickerBoing() {
-  resultStickerBoing.value = false
-  resultStickerFeedbackVisible.value = true
-  window.clearTimeout(resultStickerBoingTimer)
-  window.clearTimeout(resultStickerFeedbackTimer)
-
-  requestAnimationFrame(() => {
-    resultStickerBoing.value = true
-  })
-
-  resultStickerBoingTimer = window.setTimeout(() => {
-    resultStickerBoing.value = false
-  }, 460)
-
-  resultStickerFeedbackTimer = window.setTimeout(() => {
-    resultStickerFeedbackVisible.value = false
-  }, 1100)
 }
 
 async function handleGeneratePoster() {
-  const node = resultCaptureRef.value
+  const node = resultPosterCaptureRef.value
   if (!node) {
-    resultActionTip.value = '未找到可截图区域，请重试。'
     return
   }
-
-  resultActionTip.value = '正在生成图片...'
 
   try {
     const imageBlob = await captureNodeAsPng(node)
     if (!imageBlob) {
-      resultActionTip.value = '生成图片失败，请重试。'
       return
     }
 
@@ -362,24 +228,19 @@ async function handleGeneratePoster() {
     }
 
     const objectUrl = URL.createObjectURL(imageBlob)
-    resultPosterFile.value = new File([imageBlob], `票务反诈结算页-${Date.now()}.png`, { type: 'image/png' })
+    resultPosterFile.value = new File([imageBlob], `票务反诈分享海报-${Date.now()}.png`, { type: 'image/png' })
     resultPosterPreviewUrl.value = objectUrl
     shareButtonImageBroken.value = false
-    const savedToAlbum = await trySavePosterToAlbum()
-    if (savedToAlbum) {
-      resultActionTip.value = ''
-    } else {
-      resultActionTip.value = ''
-    }
+    await trySavePosterToAlbum()
   } catch (error) {
-    resultActionTip.value = error instanceof Error ? `生成图片失败：${error.message}` : '生成图片失败，请重试。'
+    console.warn('Failed to generate poster', error)
   }
 }
 
 function autoDownloadPoster(url: string) {
   const link = document.createElement('a')
   link.href = url
-  link.download = `票务反诈结算页-${Date.now()}.png`
+  link.download = `票务反诈分享海报-${Date.now()}.png`
   document.body.appendChild(link)
   link.click()
   link.remove()
@@ -400,7 +261,7 @@ async function trySavePosterToAlbum() {
 
     await navigator.share({
       files: [posterFile],
-      title: '票务反诈结算页',
+      title: '票务反诈分享海报',
       text: '保存这张图片到相册'
     })
     return true
@@ -578,7 +439,9 @@ function drawTextElement(ctx: CanvasRenderingContext2D, element: HTMLElement, ro
   const fontSize = parseFloat(computed.fontSize) || 14
   const lineHeight = parseCssLength(computed.lineHeight, fontSize * 1.2)
   const letterSpacing = parseCssLength(computed.letterSpacing, 0)
+  const textIndent = parseCssLength(computed.textIndent, 0)
   const maxLines = Math.max(1, Math.round(rect.height / lineHeight))
+  const shouldWrap = computed.whiteSpace !== 'nowrap'
 
   ctx.save()
   ctx.font = buildCanvasFont(computed)
@@ -586,11 +449,19 @@ function drawTextElement(ctx: CanvasRenderingContext2D, element: HTMLElement, ro
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
 
-  const lines = wrapTextByWidth(ctx, text, rect.width, letterSpacing)
+  const lines = shouldWrap ? wrapTextByWidth(ctx, text, rect.width - textIndent, letterSpacing) : [text]
   const outputLines = lines.slice(0, maxLines)
 
   outputLines.forEach((line, index) => {
-    drawTextLine(ctx, line, x, y + index * lineHeight, letterSpacing)
+    const indent = index === 0 ? textIndent : 0
+    const lineWidth = measureTextWidth(ctx, line, letterSpacing)
+    let lineX = x + indent
+    if (computed.textAlign === 'center') {
+      lineX = x + (rect.width - lineWidth) / 2
+    } else if (computed.textAlign === 'right' || computed.textAlign === 'end') {
+      lineX = x + rect.width - lineWidth
+    }
+    drawTextLine(ctx, line, lineX, y + index * lineHeight, letterSpacing)
   })
 
   ctx.restore()
@@ -717,3 +588,221 @@ function shareToXiaohongshu() {
   }, 80)
 }
 </script>
+
+<style scoped>
+.result-compose-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.result-compose-interactive {
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.result-poster-capture-source {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  z-index: -1;
+  width: 768px;
+  height: 1371px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.result-main-board {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--result-main-board-width);
+  height: var(--result-main-board-height);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.result-main-board-image,
+.result-inner-board-group,
+.result-inner-board {
+  position: absolute;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.result-main-board-image {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.result-inner-board-group {
+  inset: 0;
+  transform: translateY(-1.35%);
+}
+
+.result-inner-board {
+  left: 50%;
+  width: 94.4%;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.result-inner-board-top {
+  top: 17.9%;
+}
+
+.result-inner-board-middle {
+  top: 43.8%;
+}
+
+.result-inner-board-bottom {
+  top: 60.4%;
+}
+
+.result-top-board-copy {
+  position: absolute;
+  left: 50%;
+  top: 21.25%;
+  z-index: 2;
+  width: 68%;
+  height: 21.8%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #4a2712;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.result-top-board-copy p {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.result-top-board-scenario {
+  font-size: clamp(28px, calc(var(--result-main-board-width) * 0.074), 48px);
+  line-height: 1.08;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.result-top-board-finish {
+  margin-top: 5px !important;
+  font-size: clamp(24px, calc(var(--result-main-board-width) * 0.066), 42px);
+  line-height: 1.08;
+  white-space: nowrap;
+}
+
+.result-middle-board-copy {
+  position: absolute;
+  left: 50%;
+  top: 46.2%;
+  z-index: 2;
+  width: 73%;
+  height: 14.2%;
+  color: #4a2712;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.result-villain-name {
+  position: absolute;
+  right: calc(2% - 28px);
+  top: 7px;
+  margin: 0;
+  color: #c7382b;
+  font-size: clamp(24px, calc(var(--result-main-board-width) * 0.071), 46px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-shadow:
+    1px 1px 0 #fff0c8,
+    2px 2px 0 rgba(83, 39, 15, 0.22);
+  transform: rotate(45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+}
+
+.result-villain-body,
+.result-villain-review {
+  margin: 0;
+  width: 100%;
+  color: #4a2712;
+  font-size: clamp(12px, calc(var(--result-main-board-width) * 0.032), 20px);
+  line-height: 1.32;
+  font-weight: 200;
+  letter-spacing: 0;
+  word-break: break-word;
+}
+
+.result-villain-body {
+  padding-top: 13%;
+}
+
+.result-villain-review {
+  margin-top: 2.2%;
+}
+
+.result-bottom-board-copy {
+  position: absolute;
+  left: 50%;
+  top: 67.9%;
+  z-index: 2;
+  width: 75%;
+  height: 19%;
+  color: #4a2712;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.result-bottom-board-copy p {
+  margin: 0 0 3.2%;
+  font-size: clamp(12px, calc(var(--result-main-board-width) * 0.033), 21px);
+  line-height: 1.36;
+  font-weight: 200;
+  letter-spacing: 0;
+  word-break: break-word;
+}
+
+.result-bottom-actions {
+  position: absolute;
+  left: 50%;
+  bottom: 2.2%;
+  z-index: 10;
+  display: grid;
+  width: min(54.4%, 229px);
+  gap: 6px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.result-bottom-action {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.result-bottom-action:active {
+  transform: translateY(1px);
+}
+
+.result-bottom-action-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+</style>
