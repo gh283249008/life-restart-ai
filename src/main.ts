@@ -11,6 +11,7 @@ import GameView from './views/GameView.vue'
 import LoadingView from './views/LoadingView.vue'
 import ResultView from './views/ResultView.vue'
 import PosterView from './views/PosterView.vue'
+import StatsView from './views/StatsView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -20,7 +21,8 @@ const router = createRouter({
     { path: '/lobby', name: 'Lobby', component: HomeView },
     { path: '/game', name: 'Game', component: GameView },
     { path: '/result', name: 'Result', component: ResultView },
-    { path: '/poster', name: 'Poster', component: PosterView }
+    { path: '/poster', name: 'Poster', component: PosterView },
+    { path: '/stats', name: 'Stats', component: StatsView }
   ]
 })
 
