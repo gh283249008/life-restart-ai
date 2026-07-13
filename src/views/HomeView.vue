@@ -78,9 +78,9 @@ const startGameButtonAsset = computed(() => (
 ))
 
 function handleFollowSafeShu() {
-  openSafeShuProfile()
   hasFollowedSafeShu.value = true
   localStorage.setItem(SAFE_SHU_FOLLOWED_KEY, '1')
+  openSafeShuProfile()
 }
 
 function startGame() {
