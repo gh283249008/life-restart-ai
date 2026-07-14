@@ -573,19 +573,33 @@ function shareToXiaohongshu() {
 
   document.addEventListener('visibilitychange', onVisibilityChange)
 
-  const iframe = document.createElement('iframe')
-  iframe.style.display = 'none'
-  iframe.setAttribute('aria-hidden', 'true')
-  iframe.src = XHS_PUBLISH_DEEPLINK
-  document.body.appendChild(iframe)
+  const userAgent = navigator.userAgent || ''
+  const isAndroid = /Android/i.test(userAgent)
+  const androidVersion = isAndroid ? parseFloat((userAgent.match(/Android\s+([\d.]+)/) || [])[1] || '0') : 0
+  const isOldAndroid = androidVersion > 0 && androidVersion < 7
 
-  window.setTimeout(() => {
-    iframe.remove()
-  }, 1200)
+  if (isOldAndroid) {
+    try {
+      window.location.href = XHS_PUBLISH_DEEPLINK
+    } catch (e) {
+      console.warn('Deeplink jump failed:', e)
+      posterShareTip.value = '未检测到小红书客户端，请确认已安装后重试。'
+    }
+  } else {
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.setAttribute('aria-hidden', 'true')
+    iframe.src = XHS_PUBLISH_DEEPLINK
+    document.body.appendChild(iframe)
 
-  window.setTimeout(() => {
-    window.location.href = XHS_PUBLISH_DEEPLINK
-  }, 80)
+    window.setTimeout(() => {
+      iframe.remove()
+    }, 1200)
+
+    window.setTimeout(() => {
+      window.location.href = XHS_PUBLISH_DEEPLINK
+    }, 80)
+  }
 }
 </script>
 
