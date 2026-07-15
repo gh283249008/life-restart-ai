@@ -554,14 +554,19 @@ function handleShareButtonImageError() {
 }
 
 function shareToXiaohongshu() {
+  const userAgent = navigator.userAgent || ''
+  if (/MicroMessenger|\bQQ\//i.test(userAgent)) {
+    posterShareTip.value = '当前环境无法直接打开小红书，请点击右上角菜单选择“在浏览器中打开”后重试。'
+    return
+  }
+
   posterShareTip.value = '正在打开小红书发布页...'
-  const startedAt = Date.now()
 
   window.clearTimeout(posterShareTimer)
   posterShareTimer = window.setTimeout(() => {
-    if (Date.now() - startedAt < 1300) return
+    if (document.hidden) return
     posterShareTip.value = '未检测到小红书客户端，请确认已安装后重试。'
-  }, 1500)
+  }, 2500)
 
   const onVisibilityChange = () => {
     if (document.hidden) {
@@ -573,33 +578,8 @@ function shareToXiaohongshu() {
 
   document.addEventListener('visibilitychange', onVisibilityChange)
 
-  const userAgent = navigator.userAgent || ''
-  const isAndroid = /Android/i.test(userAgent)
-  const androidVersion = isAndroid ? parseFloat((userAgent.match(/Android\s+([\d.]+)/) || [])[1] || '0') : 0
-  const isOldAndroid = androidVersion > 0 && androidVersion < 7
-
-  if (isOldAndroid) {
-    try {
-      window.location.href = XHS_PUBLISH_DEEPLINK
-    } catch (e) {
-      console.warn('Deeplink jump failed:', e)
-      posterShareTip.value = '未检测到小红书客户端，请确认已安装后重试。'
-    }
-  } else {
-    const iframe = document.createElement('iframe')
-    iframe.style.display = 'none'
-    iframe.setAttribute('aria-hidden', 'true')
-    iframe.src = XHS_PUBLISH_DEEPLINK
-    document.body.appendChild(iframe)
-
-    window.setTimeout(() => {
-      iframe.remove()
-    }, 1200)
-
-    window.setTimeout(() => {
-      window.location.href = XHS_PUBLISH_DEEPLINK
-    }, 80)
-  }
+  // scheme 跳转必须留在点击事件的同步调用栈内，放进 setTimeout 会因丢失用户手势被现代浏览器拦截
+  window.location.href = XHS_PUBLISH_DEEPLINK
 }
 </script>
 
