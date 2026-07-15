@@ -1,5 +1,5 @@
 import express from 'express'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -11,9 +11,21 @@ const deepseekBaseUrl = (process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ragDataDir = path.join(__dirname, 'data')
 const ragStorePath = path.join(ragDataDir, 'rag-records.json')
+const posterDataDir = path.join(ragDataDir, 'posters')
 let ragWriteQueue = Promise.resolve()
 
-app.use(express.json({ limit: '1mb' }))
+app.use(express.json({ limit: '8mb' }))
+app.use(
+  '/api/posters',
+  express.static(posterDataDir, {
+    etag: false,
+    maxAge: 0,
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'no-store')
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+    }
+  })
+)
 
 function normalizeTextList(list, maxItems, maxLength) {
   if (!Array.isArray(list)) return []
@@ -197,6 +209,21 @@ function enqueueRagWrite(task) {
   return ragWriteQueue
 }
 
+async function cleanupOldPosters() {
+  try {
+    const files = await readdir(posterDataDir)
+    const now = Date.now()
+    const maxAgeMs = 24 * 60 * 60 * 1000
+    await Promise.all(files.map(async (file) => {
+      if (!/^poster_\d+_[a-z0-9]+\.png$/.test(file)) return
+      const createdAt = Number(file.split('_')[1])
+      if (!Number.isFinite(createdAt) || now - createdAt <= maxAgeMs) return
+      await rm(path.join(posterDataDir, file), { force: true })
+    }))
+  } catch {
+  }
+}
+
 app.get('/healthz', async (_req, res) => {
   const store = await loadRagStore()
   res.status(200).json({ ok: true, ragRecords: store.records.length })
@@ -205,6 +232,28 @@ app.get('/healthz', async (_req, res) => {
 app.get('/api/rag/stats', async (_req, res) => {
   const store = await loadRagStore()
   res.status(200).json(computeRagStats(store.records))
+})
+
+app.post('/api/posters', async (req, res) => {
+  const raw = String(req.body?.imageDataUrl || '')
+  const match = raw.match(/^data:image\/png;base64,([A-Za-z0-9+/=]+)$/)
+  if (!match) {
+    res.status(400).json({ error: 'Invalid poster image' })
+    return
+  }
+
+  const imageBuffer = Buffer.from(match[1], 'base64')
+  if (!imageBuffer.length || imageBuffer.length > 6 * 1024 * 1024) {
+    res.status(400).json({ error: 'Poster image size out of range' })
+    return
+  }
+
+  await mkdir(posterDataDir, { recursive: true })
+  void cleanupOldPosters()
+
+  const filename = `poster_${Date.now()}_${Math.random().toString(36).slice(2, 10)}.png`
+  await writeFile(path.join(posterDataDir, filename), imageBuffer)
+  res.status(201).json({ ok: true, url: `/api/posters/${filename}` })
 })
 
 app.post('/api/rag/remember', async (req, res) => {

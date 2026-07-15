@@ -226,7 +226,8 @@ async function handleGeneratePoster() {
     revokePosterPreviewUrl()
 
     resultPosterFile.value = new File([imageBlob], `票务反诈分享海报-${Date.now()}.png`, { type: 'image/png' })
-    resultPosterPreviewUrl.value = await blobToDataUrl(imageBlob)
+    const imageDataUrl = await blobToDataUrl(imageBlob)
+    resultPosterPreviewUrl.value = await uploadPosterImage(imageDataUrl) || imageDataUrl
     shareButtonImageBroken.value = false
   } catch (error) {
     console.warn('Failed to generate poster', error)
@@ -281,6 +282,21 @@ function blobToDataUrl(blob: Blob) {
 function revokePosterPreviewUrl() {
   if (resultPosterPreviewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(resultPosterPreviewUrl.value)
+  }
+}
+
+async function uploadPosterImage(imageDataUrl: string) {
+  try {
+    const response = await fetch('/api/posters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageDataUrl })
+    })
+    if (!response.ok) return ''
+    const payload = await response.json() as { url?: string }
+    return payload.url || ''
+  } catch {
+    return ''
   }
 }
 
@@ -564,7 +580,8 @@ function handleShareButtonImageError() {
 
 function shareToXiaohongshu() {
   const userAgent = navigator.userAgent || ''
-  if (/MicroMessenger|\bQQ\//i.test(userAgent)) {
+  const isXhsWebView = /XHS|XiaoHongShu|XhsApp|xhsdiscover/i.test(userAgent)
+  if (!isXhsWebView && /MicroMessenger|\bQQ\//i.test(userAgent)) {
     posterShareTip.value = '当前环境无法直接打开小红书，请点击右上角菜单选择“在浏览器中打开”后重试。'
     return
   }
@@ -588,7 +605,7 @@ function shareToXiaohongshu() {
   document.addEventListener('visibilitychange', onVisibilityChange)
 
   // scheme 跳转必须留在点击事件的同步调用栈内，放进 setTimeout 会因丢失用户手势被现代浏览器拦截
-  window.location.href = /Android/i.test(userAgent) ? XHS_ANDROID_INTENT : XHS_PUBLISH_DEEPLINK
+  window.location.href = /Android/i.test(userAgent) && !isXhsWebView ? XHS_ANDROID_INTENT : XHS_PUBLISH_DEEPLINK
 }
 </script>
 
