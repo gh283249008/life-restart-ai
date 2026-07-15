@@ -151,12 +151,43 @@ const resultStageVars = ref<Record<string, string>>({
 let resultResizeObserver: ResizeObserver | null = null
 const resultPosterPreviewUrl = ref('')
 const shareButtonImageBroken = ref(false)
-const XHS_PUBLISH_PATH =
-  'post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
-const XHS_PUBLISH_DEEPLINK = `xhsdiscover://${XHS_PUBLISH_PATH}`
+const XHS_TOPIC_PAGE_ID = '695a6dae0017000000000002'
 
 function openXhsPublish() {
-  window.location.href = XHS_PUBLISH_DEEPLINK
+  const deeplink = buildXhsPublishDeeplink(resultPosterPreviewUrl.value)
+  if (!deeplink) return
+  window.location.href = deeplink
+}
+
+function buildXhsPublishDeeplink(posterUrl: string) {
+  const imageUrl = getAbsolutePosterImageUrl(posterUrl)
+  if (!imageUrl) return ''
+
+  const params = new URLSearchParams()
+  params.set('source', JSON.stringify({
+    type: 'activity',
+    extraInfo: {
+      subType: 'fanzha'
+    }
+  }))
+  params.set('page', JSON.stringify({
+    page_type: 'photo_publish'
+  }))
+  params.set('attach', JSON.stringify({
+    topics: [{ page_id: XHS_TOPIC_PAGE_ID }],
+    image_resources: [{ url: imageUrl }]
+  }))
+  params.set('config', JSON.stringify({
+    is_post_jump: 1,
+    finish_on_back: 1
+  }))
+
+  return `xhsdiscover://post_new_note?${params.toString()}`
+}
+
+function getAbsolutePosterImageUrl(url: string) {
+  if (!url || url.startsWith('data:') || url.startsWith('blob:')) return ''
+  return new URL(url, window.location.origin).toString()
 }
 
 function updateResultStageVars() {
