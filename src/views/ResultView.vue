@@ -72,7 +72,6 @@
             download="票务反诈分享海报.png"
             rel="noopener"
             aria-label="保存分享海报"
-            @click.prevent="downloadPosterImage"
           >
             <img class="result-poster-preview-image" :src="resultPosterPreviewUrl" alt="结算页分享海报预览" />
           </a>
@@ -239,24 +238,9 @@ async function handleGeneratePoster() {
   }
 }
 
-function autoDownloadPoster(url: string) {
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `票务反诈分享海报-${Date.now()}.png`
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-}
-
 function getPosterDownloadUrl(url: string) {
   if (!url || url.startsWith('data:') || url.startsWith('blob:')) return url
   return url.includes('?') ? `${url}&download=1` : `${url}?download=1`
-}
-
-function downloadPosterImage() {
-  const url = getPosterDownloadUrl(resultPosterPreviewUrl.value)
-  if (!url) return
-  autoDownloadPoster(url)
 }
 
 function blobToDataUrl(blob: Blob) {
