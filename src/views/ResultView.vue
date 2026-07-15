@@ -147,8 +147,10 @@ const resultPosterFile = ref<File | null>(null)
 const posterShareTip = ref('')
 const shareButtonImageBroken = ref(false)
 let posterShareTimer = 0
-const XHS_PUBLISH_DEEPLINK =
-  'xhsdiscover://post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
+const XHS_PUBLISH_PATH =
+  'post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
+const XHS_PUBLISH_DEEPLINK = `xhsdiscover://${XHS_PUBLISH_PATH}`
+const XHS_ANDROID_INTENT = `intent://${XHS_PUBLISH_PATH}#Intent;scheme=xhsdiscover;package=com.xingin.xhs;end`
 
 function updateResultStageVars() {
   const node = resultScreenRef.value
@@ -201,9 +203,7 @@ onBeforeUnmount(() => {
   resultResizeObserver = null
   window.removeEventListener('resize', handleResultResize)
   window.clearTimeout(posterShareTimer)
-  if (resultPosterPreviewUrl.value) {
-    URL.revokeObjectURL(resultPosterPreviewUrl.value)
-  }
+  revokePosterPreviewUrl()
   resultPosterFile.value = null
 })
 
@@ -223,15 +223,11 @@ async function handleGeneratePoster() {
       return
     }
 
-    if (resultPosterPreviewUrl.value) {
-      URL.revokeObjectURL(resultPosterPreviewUrl.value)
-    }
+    revokePosterPreviewUrl()
 
-    const objectUrl = URL.createObjectURL(imageBlob)
     resultPosterFile.value = new File([imageBlob], `票务反诈分享海报-${Date.now()}.png`, { type: 'image/png' })
-    resultPosterPreviewUrl.value = objectUrl
+    resultPosterPreviewUrl.value = await blobToDataUrl(imageBlob)
     shareButtonImageBroken.value = false
-    await trySavePosterToAlbum()
   } catch (error) {
     console.warn('Failed to generate poster', error)
   }
@@ -270,6 +266,21 @@ async function trySavePosterToAlbum() {
       return false
     }
     return false
+  }
+}
+
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('图片预览生成失败'))
+    reader.readAsDataURL(blob)
+  })
+}
+
+function revokePosterPreviewUrl() {
+  if (resultPosterPreviewUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(resultPosterPreviewUrl.value)
   }
 }
 
@@ -540,9 +551,7 @@ function parseOriginAxis(value: string, size: number) {
 }
 
 function closePosterPreview() {
-  if (resultPosterPreviewUrl.value) {
-    URL.revokeObjectURL(resultPosterPreviewUrl.value)
-  }
+  revokePosterPreviewUrl()
   resultPosterPreviewUrl.value = ''
   resultPosterFile.value = null
   posterShareTip.value = ''
@@ -579,7 +588,7 @@ function shareToXiaohongshu() {
   document.addEventListener('visibilitychange', onVisibilityChange)
 
   // scheme 跳转必须留在点击事件的同步调用栈内，放进 setTimeout 会因丢失用户手势被现代浏览器拦截
-  window.location.href = XHS_PUBLISH_DEEPLINK
+  window.location.href = /Android/i.test(userAgent) ? XHS_ANDROID_INTENT : XHS_PUBLISH_DEEPLINK
 }
 </script>
 

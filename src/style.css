@@ -732,6 +732,10 @@
     width: 100%;
     height: auto;
     border-radius: 10px;
+    user-select: auto;
+    -webkit-user-select: auto;
+    -webkit-touch-callout: default;
+    -webkit-user-drag: auto;
   }
 
   .result-poster-share-button {
