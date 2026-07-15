@@ -153,10 +153,27 @@ const resultPosterPreviewUrl = ref('')
 const shareButtonImageBroken = ref(false)
 const XHS_TOPIC_PAGE_ID = '695a6dae0017000000000002'
 
-function openXhsPublish() {
-  const deeplink = buildXhsPublishDeeplink(resultPosterPreviewUrl.value)
-  if (!deeplink) return
+async function openXhsPublish() {
+  const posterUrl = await ensureUploadedPosterUrl()
+  const deeplink = buildXhsPublishDeeplink(posterUrl)
+  if (!deeplink) {
+    window.alert('海报图片上传失败，请重新生成分享海报后再试')
+    return
+  }
+  console.info('XHS publish deeplink:', deeplink)
   window.location.href = deeplink
+}
+
+async function ensureUploadedPosterUrl() {
+  const currentUrl = resultPosterPreviewUrl.value
+  if (!currentUrl) return ''
+  if (!currentUrl.startsWith('data:') && !currentUrl.startsWith('blob:')) return currentUrl
+  if (!currentUrl.startsWith('data:image/png;base64,')) return ''
+
+  const uploadedUrl = await uploadPosterImage(currentUrl)
+  if (!uploadedUrl) return ''
+  resultPosterPreviewUrl.value = uploadedUrl
+  return uploadedUrl
 }
 
 function buildXhsPublishDeeplink(posterUrl: string) {
