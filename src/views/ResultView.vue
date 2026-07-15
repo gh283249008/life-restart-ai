@@ -146,7 +146,6 @@ const resultPosterPreviewUrl = ref('')
 const resultPosterFile = ref<File | null>(null)
 const posterShareTip = ref('')
 const shareButtonImageBroken = ref(false)
-let posterShareTimer = 0
 const XHS_PUBLISH_PATH =
   'post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
 const XHS_PUBLISH_DEEPLINK = `xhsdiscover://${XHS_PUBLISH_PATH}`
@@ -201,7 +200,6 @@ onBeforeUnmount(() => {
   resultResizeObserver?.disconnect()
   resultResizeObserver = null
   window.removeEventListener('resize', handleResultResize)
-  window.clearTimeout(posterShareTimer)
   revokePosterPreviewUrl()
   resultPosterFile.value = null
 })
@@ -578,32 +576,6 @@ function handleShareButtonImageError() {
 }
 
 function shareToXiaohongshu() {
-  const userAgent = navigator.userAgent || ''
-  const isXhsWebView = /XHS|XiaoHongShu|XhsApp|xhsdiscover/i.test(userAgent)
-  if (!isXhsWebView && /MicroMessenger|\bQQ\//i.test(userAgent)) {
-    posterShareTip.value = '当前环境无法直接打开小红书，请点击右上角菜单选择“在浏览器中打开”后重试。'
-    return
-  }
-
-  posterShareTip.value = '正在打开小红书发布页...'
-
-  window.clearTimeout(posterShareTimer)
-  posterShareTimer = window.setTimeout(() => {
-    if (document.hidden) return
-    posterShareTip.value = '未检测到小红书客户端，请确认已安装后重试。'
-  }, 2500)
-
-  const onVisibilityChange = () => {
-    if (document.hidden) {
-      window.clearTimeout(posterShareTimer)
-      posterShareTip.value = ''
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-    }
-  }
-
-  document.addEventListener('visibilitychange', onVisibilityChange)
-
-  // scheme 跳转必须留在点击事件的同步调用栈内，放进 setTimeout 会因丢失用户手势被现代浏览器拦截
   window.location.href = XHS_PUBLISH_DEEPLINK
 }
 </script>
