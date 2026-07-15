@@ -14,7 +14,7 @@ const ragStorePath = path.join(ragDataDir, 'rag-records.json')
 const posterDataDir = path.join(ragDataDir, 'posters')
 let ragWriteQueue = Promise.resolve()
 
-app.use(express.json({ limit: '8mb' }))
+app.use(express.json({ limit: '30mb' }))
 function normalizeTextList(list, maxItems, maxLength) {
   if (!Array.isArray(list)) return []
   return list
@@ -231,7 +231,7 @@ app.post('/api/posters', async (req, res) => {
   }
 
   const imageBuffer = Buffer.from(match[1], 'base64')
-  if (!imageBuffer.length || imageBuffer.length > 6 * 1024 * 1024) {
+  if (!imageBuffer.length || imageBuffer.length > 24 * 1024 * 1024) {
     res.status(400).json({ error: 'Poster image size out of range' })
     return
   }
