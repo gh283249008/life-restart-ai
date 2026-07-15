@@ -69,11 +69,10 @@
           <img class="result-poster-preview-image" :src="resultPosterPreviewUrl" alt="结算页分享海报预览" />
         </div>
         <p class="result-poster-save-hint">长按图片保存到相册</p>
-        <button type="button" class="result-poster-share-button" @click="shareToXiaohongshu" aria-label="分享到小红书">
+        <a class="result-poster-share-button" :href="XHS_PUBLISH_DEEPLINK" aria-label="分享到小红书">
           <img class="result-poster-share-image" :src="resultShareToXhsButtonImage" alt="分享到小红书" @error="handleShareButtonImageError" />
           <span v-if="shareButtonImageBroken" class="result-poster-share-fallback">分享到小红书</span>
-        </button>
-        <p v-if="posterShareTip" class="result-poster-share-tip">{{ posterShareTip }}</p>
+        </a>
       </div>
     </div>
   </section>
@@ -144,7 +143,6 @@ const resultStageVars = ref<Record<string, string>>({
 let resultResizeObserver: ResizeObserver | null = null
 const resultPosterPreviewUrl = ref('')
 const resultPosterFile = ref<File | null>(null)
-const posterShareTip = ref('')
 const shareButtonImageBroken = ref(false)
 const XHS_PUBLISH_PATH =
   'post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
@@ -567,16 +565,11 @@ function closePosterPreview() {
   revokePosterPreviewUrl()
   resultPosterPreviewUrl.value = ''
   resultPosterFile.value = null
-  posterShareTip.value = ''
   shareButtonImageBroken.value = false
 }
 
 function handleShareButtonImageError() {
   shareButtonImageBroken.value = true
-}
-
-function shareToXiaohongshu() {
-  window.location.href = XHS_PUBLISH_DEEPLINK
 }
 </script>
 

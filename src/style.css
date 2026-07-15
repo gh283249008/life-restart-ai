@@ -749,6 +749,8 @@
     border-radius: 0;
     background: transparent;
     box-shadow: none;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .result-poster-save-hint {
