@@ -727,6 +727,13 @@
     line-height: 1;
   }
 
+  .result-poster-preview-link {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .result-poster-preview-image {
     display: block;
     width: 100%;

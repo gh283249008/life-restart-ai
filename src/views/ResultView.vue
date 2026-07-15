@@ -66,13 +66,22 @@
       <div class="result-poster-shell">
         <div class="result-poster-dialog">
           <button type="button" class="result-poster-close" @click="closePosterPreview" aria-label="关闭预览">×</button>
-          <img class="result-poster-preview-image" :src="resultPosterPreviewUrl" alt="结算页分享海报预览" />
+          <a
+            class="result-poster-preview-link"
+            :href="getPosterDownloadUrl(resultPosterPreviewUrl)"
+            download="票务反诈分享海报.png"
+            rel="noopener"
+            aria-label="保存分享海报"
+            @click.prevent="downloadPosterImage"
+          >
+            <img class="result-poster-preview-image" :src="resultPosterPreviewUrl" alt="结算页分享海报预览" />
+          </a>
         </div>
-        <p class="result-poster-save-hint">长按图片保存到相册</p>
-        <a class="result-poster-share-button" :href="XHS_PUBLISH_DEEPLINK" aria-label="分享到小红书">
+        <p class="result-poster-save-hint">点击图片下载，或长按图片保存到相册</p>
+        <button type="button" class="result-poster-share-button" @click="openXhsPublish" aria-label="分享到小红书">
           <img class="result-poster-share-image" :src="resultShareToXhsButtonImage" alt="分享到小红书" @error="handleShareButtonImageError" />
           <span v-if="shareButtonImageBroken" class="result-poster-share-fallback">分享到小红书</span>
-        </a>
+        </button>
       </div>
     </div>
   </section>
@@ -142,11 +151,14 @@ const resultStageVars = ref<Record<string, string>>({
 
 let resultResizeObserver: ResizeObserver | null = null
 const resultPosterPreviewUrl = ref('')
-const resultPosterFile = ref<File | null>(null)
 const shareButtonImageBroken = ref(false)
 const XHS_PUBLISH_PATH =
   'post_new_note?page=photo_publish&attach=%7B%22topics%22%3A%5B%7B%22page_id%22%3A%22695a6dae0017000000000002%22%7D%5D%7D&config=%7B%7D'
 const XHS_PUBLISH_DEEPLINK = `xhsdiscover://${XHS_PUBLISH_PATH}`
+
+function openXhsPublish() {
+  window.location.href = XHS_PUBLISH_DEEPLINK
+}
 
 function updateResultStageVars() {
   const node = resultScreenRef.value
@@ -199,7 +211,6 @@ onBeforeUnmount(() => {
   resultResizeObserver = null
   window.removeEventListener('resize', handleResultResize)
   revokePosterPreviewUrl()
-  resultPosterFile.value = null
 })
 
 function handleResultResize() {
@@ -220,7 +231,6 @@ async function handleGeneratePoster() {
 
     revokePosterPreviewUrl()
 
-    resultPosterFile.value = new File([imageBlob], `票务反诈分享海报-${Date.now()}.png`, { type: 'image/png' })
     const imageDataUrl = await blobToDataUrl(imageBlob)
     resultPosterPreviewUrl.value = await uploadPosterImage(imageDataUrl) || imageDataUrl
     shareButtonImageBroken.value = false
@@ -238,31 +248,15 @@ function autoDownloadPoster(url: string) {
   link.remove()
 }
 
-async function trySavePosterToAlbum() {
-  const posterFile = resultPosterFile.value
-  if (!posterFile) return false
+function getPosterDownloadUrl(url: string) {
+  if (!url || url.startsWith('data:') || url.startsWith('blob:')) return url
+  return url.includes('?') ? `${url}&download=1` : `${url}?download=1`
+}
 
-  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
-    return false
-  }
-
-  try {
-    if (typeof navigator.canShare === 'function' && !navigator.canShare({ files: [posterFile] })) {
-      return false
-    }
-
-    await navigator.share({
-      files: [posterFile],
-      title: '票务反诈分享海报',
-      text: '保存这张图片到相册'
-    })
-    return true
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      return false
-    }
-    return false
-  }
+function downloadPosterImage() {
+  const url = getPosterDownloadUrl(resultPosterPreviewUrl.value)
+  if (!url) return
+  autoDownloadPoster(url)
 }
 
 function blobToDataUrl(blob: Blob) {
@@ -564,7 +558,6 @@ function parseOriginAxis(value: string, size: number) {
 function closePosterPreview() {
   revokePosterPreviewUrl()
   resultPosterPreviewUrl.value = ''
-  resultPosterFile.value = null
   shareButtonImageBroken.value = false
 }
 

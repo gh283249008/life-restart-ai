@@ -15,18 +15,6 @@ const posterDataDir = path.join(ragDataDir, 'posters')
 let ragWriteQueue = Promise.resolve()
 
 app.use(express.json({ limit: '8mb' }))
-app.use(
-  '/api/posters',
-  express.static(posterDataDir, {
-    etag: false,
-    maxAge: 0,
-    setHeaders(res) {
-      res.setHeader('Cache-Control', 'no-store')
-      res.setHeader('X-Content-Type-Options', 'nosniff')
-    }
-  })
-)
-
 function normalizeTextList(list, maxItems, maxLength) {
   if (!Array.isArray(list)) return []
   return list
@@ -255,6 +243,36 @@ app.post('/api/posters', async (req, res) => {
   await writeFile(path.join(posterDataDir, filename), imageBuffer)
   res.status(201).json({ ok: true, url: `/api/posters/${filename}` })
 })
+
+app.get('/api/posters/:filename', async (req, res, next) => {
+  const filename = String(req.params.filename || '')
+  if (!/^poster_\d+_[a-z0-9]+\.png$/.test(filename)) {
+    next()
+    return
+  }
+
+  if (req.query.download !== '1') {
+    next()
+    return
+  }
+
+  const filePath = path.join(posterDataDir, filename)
+  res.setHeader('Cache-Control', 'no-store')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.download(filePath, `票务反诈分享海报.png`)
+})
+
+app.use(
+  '/api/posters',
+  express.static(posterDataDir, {
+    etag: false,
+    maxAge: 0,
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'no-store')
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+    }
+  })
+)
 
 app.post('/api/rag/remember', async (req, res) => {
   const payload = validateRememberPayload(req.body)
