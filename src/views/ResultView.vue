@@ -152,6 +152,7 @@ let resultResizeObserver: ResizeObserver | null = null
 const resultPosterPreviewUrl = ref('')
 const shareButtonImageBroken = ref(false)
 const XHS_TOPIC_PAGE_ID = '695a6dae0017000000000002'
+const POSTER_PUBLIC_ORIGIN = 'http://47.93.200.55'
 
 async function openXhsPublish() {
   const posterUrl = await ensureUploadedPosterUrl()
@@ -204,7 +205,7 @@ function buildXhsPublishDeeplink(posterUrl: string) {
 
 function getAbsolutePosterImageUrl(url: string) {
   if (!url || url.startsWith('data:') || url.startsWith('blob:')) return ''
-  return new URL(url, window.location.origin).toString()
+  return new URL(url, POSTER_PUBLIC_ORIGIN).toString()
 }
 
 function updateResultStageVars() {
